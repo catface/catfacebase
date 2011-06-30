@@ -42,6 +42,7 @@ if (WINDOWS)
 endif (WINDOWS)
 
 include_directories(
+    ${CMAKE_SOURCE_DIR}/newview
     ${DBUSGLIB_INCLUDE_DIRS}
     ${ELFIO_INCLUDE_DIR}
     ${JSONCPP_INCLUDE_DIRS}
@@ -49,6 +50,7 @@ include_directories(
     ${LLCHARACTER_INCLUDE_DIRS}
     ${LLCOMMON_INCLUDE_DIRS}
     ${LLIMAGE_INCLUDE_DIRS}
+    ${LLKDU_INCLUDE_DIRS}
     ${LLINVENTORY_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
@@ -156,6 +158,7 @@ set(viewer_SOURCE_FILES
     llfloaterabout.cpp
     llfloateractivespeakers.cpp
     llfloateranimpreview.cpp
+    llfloaterattachments.cpp
     llfloaterauction.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
@@ -203,7 +206,9 @@ set(viewer_SOURCE_FILES
     llfloaterimagepreview.cpp
     llfloaterimport.cpp
     llfloaterinspect.cpp
+    llfloaterinterceptor.cpp
     llfloaterjoystick.cpp
+    llfloaterkeytool.cpp
     llfloaterlagmeter.cpp
     llfloaterland.cpp
     llfloaterlandholdings.cpp
@@ -235,6 +240,7 @@ set(viewer_SOURCE_FILES
     llfloaterteleport.cpp
     llfloaterteleporthistory.cpp
     llfloatertest.cpp
+    llfloatertextdump.cpp
     llfloatertools.cpp
     llfloatertopobjects.cpp
     llfloatertos.cpp
@@ -278,6 +284,7 @@ set(viewer_SOURCE_FILES
     llinventorymodel.cpp
     llinventoryview.cpp
     lljoystickbutton.cpp
+    llkeytool.cpp
     lllandmarklist.cpp
     lllocalinventory.cpp
     lllogchat.cpp
@@ -512,11 +519,11 @@ set(viewer_SOURCE_FILES
     rlvextensions.cpp
     rlvfloaterbehaviour.cpp
     rlvviewer2.cpp
-	shcommandhandler.cpp
+    shcommandhandler.cpp
     )
 
 # This gets renamed in the packaging step
-set(VIEWER_BINARY_NAME "secondlife-bin" CACHE STRING
+set(VIEWER_BINARY_NAME "Impostor" CACHE STRING
     "The name of the viewer executable to create.")
 
 if ((LINUX OR DARWIN) AND NOT DARWIN_PPC)
@@ -629,6 +636,7 @@ set(viewer_HEADER_FILES
     llfloaterabout.h
     llfloateractivespeakers.h
     llfloateranimpreview.h
+    llfloaterattachments.h
     llfloaterauction.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
@@ -676,7 +684,9 @@ set(viewer_HEADER_FILES
     llfloaterimagepreview.h
     llfloaterimport.h
     llfloaterinspect.h
+    llfloaterinterceptor.h
     llfloaterjoystick.h
+    llfloaterkeytool.h
     llfloaterlagmeter.h
     llfloaterland.h
     llfloaterlandholdings.h
@@ -708,6 +718,7 @@ set(viewer_HEADER_FILES
     llfloaterteleport.h
     llfloaterteleporthistory.h
     llfloatertest.h
+    llfloatertextdump.h
     llfloatertools.h
     llfloatertopobjects.h
     llfloatertos.h
@@ -749,6 +760,7 @@ set(viewer_HEADER_FILES
     llinventorymodel.h
     llinventoryview.h
     lljoystickbutton.h
+    llkeytool.h
     lllandmarklist.h
     lllightconstants.h
     lllocalinventory.h
@@ -1156,7 +1168,7 @@ if (WINDOWS)
         comdlg32
         ${DINPUT_LIBRARY}
         ${DXGUID_LIBRARY}
-        fmodvc
+        ${FMOD_LIBRARIES}
         gdi32
         kernel32
         odbc32
@@ -1221,9 +1233,13 @@ set(viewer_APPSETTINGS_FILES
     app_settings/low_graphics.xml
     app_settings/mid_graphics.xml
     app_settings/settings.xml
+    app_settings/settings_ascent.xml
+    app_settings/settings_ascent_coa.xml
     app_settings/settings_crash_behavior.xml
     app_settings/settings_files.xml
     app_settings/settings_per_account.xml
+    app_settings/settings_sh.xml
+    app_settings/settings_rlv.xml
     app_settings/std_bump.ini
     app_settings/trees.xml
     app_settings/ultra_graphics.xml
@@ -1270,7 +1286,9 @@ endif (WINDOWS)
 if (OPENAL)
   set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_OPENAL")
 endif (OPENAL)
-
+if (MSVC)
+set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMOD")
+endif (MSVC)
 if (FMOD)
   set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMOD")
 
@@ -1321,11 +1339,11 @@ set(PACKAGE ${PACKAGE_DEFAULT} CACHE BOOL
     "Add a package target that builds an installer package.")
 
 if (WINDOWS)
-    if(MSVC71)
-        set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map /MAPINFO:LINES")
-    else(MSVC71)
+    if(MSVC10)
+        set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
+    else()
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
-    endif(MSVC71)
+    endif()
     
     set_target_properties(${VIEWER_BINARY_NAME}
         PROPERTIES
@@ -1442,6 +1460,16 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${ELFIO_LIBRARIES}
     )
 
+if (USE_KDU)
+    target_link_libraries(${VIEWER_BINARY_NAME}
+        ${LLKDU_LIBRARIES}
+        ${KDU_LIBRARY}
+        )
+else (USE_KDU)
+    target_link_libraries(${VIEWER_BINARY_NAME}
+        ${LLIMAGEJ2COJ_LIBRARIES}
+        )
+endif (USE_KDU)
 if (LINUX)
   add_custom_command(
       OUTPUT secondlife-stripped
@@ -1493,7 +1521,7 @@ if (DARWIN)
     MACOSX_BUNDLE_BUNDLE_NAME "${VIEWER_BRANDING_NAME}"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${viewer_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "${viewer_VERSION}"
-    MACOSX_BUNDLE_COPYRIGHT "Copyright 2010 Balseraph Software Group"
+    MACOSX_BUNDLE_COPYRIGHT "Copyright 2011 Simms"
     )
 
   add_custom_command(

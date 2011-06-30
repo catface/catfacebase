@@ -228,10 +228,9 @@ BOOL LLFloaterAnimPreview::postBuild()
 
 	childSetCommitCallback("name_form", onCommitName, this);
 
-	if (gSavedSettings.getBOOL("AscentPowerfulWizard"))
-	{
+	
 		childSetMaxValue("priority", 7);
-	}
+	
 
 	childSetLabelArg("ok_btn", "[UPLOADFEE]", gHippoGridManager->getConnectedGrid()->getUploadFee());
 	childSetAction("ok_btn", onBtnOK, this);
@@ -359,7 +358,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 			delete[] file_buffer;
 
 			// <edit> moved everything bvh from below
-			if(loaderp && loaderp->isInitialized() && loaderp->getDuration() <= MAX_ANIM_DURATION)
+			if(loaderp && loaderp->isInitialized())
 	{
 		mTransactionID.generate();
 		mMotionID = mTransactionID.makeAssetID(gAgent.getSecureSessionID());
@@ -394,19 +393,9 @@ BOOL LLFloaterAnimPreview::postBuild()
 				success = false;
 				if ( loaderp )
 				{
-					if (loaderp->getDuration() > MAX_ANIM_DURATION)
-					{
-						LLUIString out_str = getString("anim_too_long");
-						out_str.setArg("[LENGTH]", llformat("%.1f", loaderp->getDuration()));
-						out_str.setArg("[MAX_LENGTH]", llformat("%.1f", MAX_ANIM_DURATION));
-						getChild<LLUICtrl>("bad_animation_text")->setValue(out_str.getString());
-					}
-					else
-					{
 						LLUIString out_str = getString("failed_file_read");
 						out_str.setArg("[STATUS]", getString(STATUS[loaderp->getStatus()])); 
 						getChild<LLUICtrl>("bad_animation_text")->setValue(out_str.getString());
-					}
 				}
 
 				//setEnabled(FALSE);
@@ -417,7 +406,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 		}
 	}
 	// <edit>
-	else if(exten == "animatn")
+	else if(exten == "anim" || exten == "animatn" || exten == "neil")
 	{
 		S32 file_size;
 		LLAPRFile raw_animatn;

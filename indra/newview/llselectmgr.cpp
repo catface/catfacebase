@@ -95,6 +95,8 @@
 
 // <edit>
 #include "llfloaterexport.h"
+#include "llfloaterattachments.h"
+#include "llfloaterinterceptor.h"
 // </edit>
 
 #include "llglheaders.h"
@@ -3400,6 +3402,10 @@ void LLSelectMgr::deselectAll()
 		return;
 	}
 
+	// <edit>
+	std::list<LLViewerObject*> intercepted;
+	// </edit>
+
 	// Zap the angular velocity, as the sim will set it to zero
 	for (LLObjectSelection::iterator iter = mSelectedObjects->begin();
 		 iter != mSelectedObjects->end(); iter++ )
@@ -3407,7 +3413,23 @@ void LLSelectMgr::deselectAll()
 		LLViewerObject *objectp = (*iter)->getObject();
 		objectp->setAngularVelocity( 0,0,0 );
 		objectp->setVelocity( 0,0,0 );
+		// <edit>
+		if(LLFloaterInterceptor::gInterceptorActive)
+		{
+			if(LLFloaterInterceptor::has(objectp))
+			{
+				intercepted.push_back(objectp);
+			}
+		}
+		// </edit>
 	}
+
+	// <edit>
+	std::list<LLViewerObject*>::iterator rmv_iter = intercepted.begin();
+	std::list<LLViewerObject*>::iterator rmv_end = intercepted.end();
+	for( ; rmv_iter != rmv_end; ++rmv_iter)
+		remove(*rmv_iter);
+	// </edit>
 
 	sendListToRegions(
 		"ObjectDeselect",
@@ -4483,6 +4505,12 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 			node->mSitName.assign(sit_name);
 			node->mTouchName.assign(touch_name);
 		}
+
+		// <edit> Send to export floaters
+		LLFloaterExport::receiveObjectProperties(id, name, desc);
+		if(!node)
+			LLFloaterAttachments::dispatchHUDObjectProperties(new LLHUDAttachment(name, desc, owner_id, id, from_task_id, texture_ids, 0, inv_serial));
+		// </edit>
 	}
 
 	dialog_refresh_all();

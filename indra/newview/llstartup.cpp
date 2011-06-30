@@ -201,8 +201,6 @@
 
 // <edit>
 #include "llpanellogin.h"
-//#include "llfloateravatars.h"
-//#include "llactivation.h"
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "ascentdaycyclemanager.h"
 #include "llfloaterblacklist.h"
@@ -524,9 +522,9 @@ bool idle_startup()
 			if(!start_messaging_system(
 				   message_template_path,
 				   port,
-				   LL_VERSION_MAJOR,
-				   LL_VERSION_MINOR,
-				   LL_VERSION_PATCH,
+				   gSavedSettings.getU32("SpecifiedVersionMaj"),
+				   gSavedSettings.getU32("SpecifiedVersionMin"),
+				   gSavedSettings.getU32("SpecifiedVersionPatch"),
 				   FALSE,
 				   std::string(),
 				   responder,
@@ -1117,27 +1115,9 @@ bool idle_startup()
 		// color init must be after saved settings loaded
 		init_colors();
 
-		if (gSavedSettings.getBOOL("VivoxLicenseAccepted"))
-		{
-			// skipping over STATE_LOGIN_VOICE_LICENSE since we don't need it
-			// skipping over STATE_UPDATE_CHECK because that just waits for input
-			LLStartUp::setStartupState( STATE_LOGIN_AUTH_INIT );
-		}
-		else
-		{
-			LLStartUp::setStartupState(STATE_LOGIN_VOICE_LICENSE);
-			LLFirstUse::voiceLicenseAgreement();
-		}
+		// skipping over STATE_UPDATE_CHECK because that just waits for input
+		LLStartUp::setStartupState( STATE_LOGIN_AUTH_INIT );
 
-		return FALSE;
-	}
-
-	if (STATE_LOGIN_VOICE_LICENSE == LLStartUp::getStartupState())
-	{
-		LL_DEBUGS("AppInitStartupState") << "STATE_LOGIN_VOICE_LICENSE" << LL_ENDL;
-		// prompt the user to agree to the voice license before enabling voice.
-		// only send users here on first login, otherwise continue
-		// on to STATE_LOGIN_AUTH_INIT
 		return FALSE;
 	}
 
@@ -1290,6 +1270,14 @@ bool idle_startup()
 		hashed_mac.finalize();
 		hashed_mac.hex_digest(hashed_mac_string);
 
+		// <edit>
+		std::string my_mac = std::string(hashed_mac_string);
+		if(gSavedSettings.getBOOL("SpecifyMAC"))
+			my_mac = gSavedSettings.getString("SpecifiedMAC").c_str();
+		std::string my_id0 = LLAppViewer::instance()->getSerialNumber();
+		if(gSavedSettings.getBOOL("SpecifyID0"))
+			my_id0 = gSavedSettings.getString("SpecifiedID0");
+		// </edit>
 
 		LLViewerLogin* vl = LLViewerLogin::getInstance();
 		std::string grid_uri = vl->getCurrentGridURI();
@@ -1310,10 +1298,12 @@ bool idle_startup()
 			gAcceptCriticalMessage,
 			gLastExecEvent,
 			requested_options,
-			hashed_mac_string,
-			LLAppViewer::instance()->getSerialNumber());
-
-		gAuthString = hashed_mac_string;
+		// <edit>
+		//	hashed_mac_string,
+		//	LLAppViewer::instance()->getSerialNumber());
+			my_mac,
+			my_id0);
+		// </edit>
 
 		// reset globals
 		gAcceptTOS = FALSE;
@@ -3278,7 +3268,7 @@ bool update_dialog_callback(const LLSD& notification, const LLSD& response)
 	// userserver no longer exists.
 	query_map["userserver"] = LLViewerLogin::getInstance()->getGridLabel();
 	// <edit>
-	query_map["channel"] = LL_CHANNEL;
+	query_map["channel"] = gSavedSettings.getString("SpecifiedChannel");
 
 	// *TODO constantize this guy
 	// *NOTE: This URL is also used in win_setup/lldownloader.cpp
@@ -3744,7 +3734,6 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 		RTNENUM( STATE_LOGIN_SHOW );
 		RTNENUM( STATE_LOGIN_WAIT );
 		RTNENUM( STATE_LOGIN_CLEANUP );
-		RTNENUM( STATE_LOGIN_VOICE_LICENSE );
 		RTNENUM( STATE_UPDATE_CHECK );
 		RTNENUM( STATE_LOGIN_AUTH_INIT );
 		RTNENUM( STATE_LOGIN_AUTHENTICATE );

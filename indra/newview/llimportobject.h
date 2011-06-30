@@ -10,6 +10,15 @@
 #include "llfloater.h"
 #include "llvoavatardefines.h"
 
+typedef enum e_import_object_state
+	{
+		IMPORT_INIT,
+		//IMPORT_TRANSFORM, Done when new prim is seen.
+		IMPORT_VOLUME,
+		IMPORT_EXTRA,
+		IMPORT_TEXTURE,
+		IMPORT_FINISH //moves on to next prim or links.
+	} eImportObjectState;
 class LLImportAssetData
 {
 public:
@@ -86,6 +95,7 @@ class LLXmlImport
 public:
 	static void import(LLXmlImportOptions* import_options);
 	static void onNewPrim(LLViewerObject* object);
+	static void onUpdatePrim(LLViewerObject* object);
 	static void onNewItem(LLViewerInventoryItem* item);
 	static void onNewAttachment(LLViewerObject* object);
 	static void Cancel(void* user_data);
@@ -95,6 +105,8 @@ public:
 
 	static bool sImportInProgress;
 	static bool sImportHasAttachments;
+	static eImportObjectState sState;
+	static LLUUID sExpectedUpdate;
 	static LLUUID sFolderID;
 	static LLViewerObject* sSupplyParams;
 	static int sPrimsNeeded;
@@ -103,7 +115,8 @@ public:
 	static std::map<std::string, U8> sId2attachpt; // attach points of all attachables
 	static std::map<U8, LLVector3> sPt2attachpos; // positions of all attachables
 	static std::map<U8, LLQuaternion> sPt2attachrot; // rotations of all attachables
-	static std::map<U32, std::queue<U32> > sLinkSets;//Linksets to link.
+	static std::map<U32, std::vector<LLViewerObject*> > sLinkSets;//Linksets to link.
+	static std::map<U8, std::string> sDescriptions; //original descriptions for attachments
 	static int sPrimIndex;
 	static int sAttachmentsDone;
 	static std::map<std::string, U32> sId2localid;

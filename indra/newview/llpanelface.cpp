@@ -503,9 +503,9 @@ void LLPanelFace::getState()
 	LLCalc* calcp = LLCalc::getInstance();
 	if( objectp
 		&& objectp->getPCode() == LL_PCODE_VOLUME
-		&& objectp->permModify())
+		)//&& objectp->permModify())
 	{
-		BOOL editable = objectp->permModify();
+		BOOL editable = TRUE;
 
 
 		// only turn on auto-adjust button if there is a media renderer and the media is loaded
@@ -1198,14 +1198,9 @@ void LLPanelFace::onClickCopy(void* userdata)
 		tex_params["imageid"] = LLUUID::null;
 		gSavedPerAccountSettings.setLLSD("Image.Settings", tex_params);
 		if (itemp)
-		{
-			LLPermissions perms = itemp->getPermissions();
-			//full perms
-			if (perms.getMaskOwner() & PERM_ITEM_UNRESTRICTED)
 			{
 				tex_params["imageid"] = tex;
 			}
-		}
 		llinfos << "Copying params on face " << i << "." << llendl;
 		textures.append(tex_params);
 	}

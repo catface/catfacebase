@@ -77,6 +77,7 @@
 
 // <edit>
 #include "llimportobject.h"
+#include "llfloaterinterceptor.h"
 // </edit>
 
 extern F32 gMinObjectDistance;
@@ -569,6 +570,11 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 				}
 			}
 		}
+		if(LLFloaterInterceptor::gInterceptorActive)
+		{
+			if(objectp)
+				LLFloaterInterceptor::sInstance->affect(objectp);
+		}
 		// </edit>
 		
 		objectp->setLastUpdateType(update_type);
@@ -909,11 +915,25 @@ void LLViewerObjectList::removeDrawable(LLDrawable* drawablep)
 
 BOOL LLViewerObjectList::killObject(LLViewerObject *objectp)
 {
+	// Don't commit suicide just because someone thinks you are on a ledge. -SG
+	if (objectp == gAgent.getAvatarObject())
+	{
+		objectp->setRegion(gAgent.getRegion());
+		return FALSE;
+	}	
+	
 	// When we're killing objects, all we do is mark them as dead.
 	// We clean up the dead objects later.
 
 	if (objectp)
 	{
+		// <edit>
+		if(LLFloaterInterceptor::gInterceptorActive)
+		{
+			LLFloaterInterceptor::letGo(objectp);
+		}
+		// </edit>
+
 		if (objectp->isDead())
 		{
 			// This object is already dead.  Don't need to do more.

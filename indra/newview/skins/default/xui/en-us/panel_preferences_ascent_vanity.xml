@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel top="20" left="10" height="400" width="512" follows="left|top|right|bottom"
 	border="true" label="Vanity Settings" name="ascvan" enabled="true" mouse_opaque="true">
-	<tab_container label="Singularity" bottom="0" height="440" width="497" left="0"
+	<tab_container label="Impostor" bottom="0" height="440" width="497" left="0"
 		name="Ascent Vanity" tab_min_width="90" tab_position="top">
 		<panel border="true" left="1" bottom="-190" height="180" width="500" mouse_opaque="true"
 				follows="left|top|right|bottom" label="General" name="General">
@@ -31,7 +31,7 @@
 				width="400" />
 		</panel>
 		<panel border="true" left="1" bottom="-190" height="180" width="500" mouse_opaque="true"
-			follows="left|top|right|bottom" label="Colors" name="Colors">
+			follows="left|top|right|bottom" label="Client Tags" name="Colors">
 			<!-- Client tag options -->
 			<view_border bevel_style="none" border_thickness="1" bottom="-155" follows="top|left"
 				height="150" left="5" name="GraphicsBorder" width="485" />
@@ -49,11 +49,111 @@
 					value="f25263b7-6167-4f34-a4ef-af65213b2e39">
 					Singularity
 				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="8873757c-092a-98fb-1afd-ecd347566fcd">
+					Ascent
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="734fed29-4c51-63e5-1648-6589949d7585">
+					Explicit
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="cc7a030f-282f-c165-44d2-b5ee572e72bf">
+					Imprudence
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="ed63fbd0-589e-fe1d-a3d0-16905efaa96b">
+					Phoenix
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="2a9a406c-f448-68f2-4e38-878f8c46c190">
+					Meerkat
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="54d93609-1392-2a93-255c-a9dd429ecca5">
+					Emergence
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="c252d89d-6f7c-7d90-f430-d140d2e3fbbe">
+					VLife
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="1c29480c-c608-df87-28bb-964fb64c5366">
+					Gemini
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="f5a48821-9a98-d09e-8d6a-50cc08ba9a47">
+					NeilLife
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="5aa5c70d-d787-571b-0495-4fc1bdef1500">
+					LGG Proxy
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="8183e823-c443-2142-6eb6-2ab763d4f81c">
+					Day Oh proxy
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="f709044d-3f7e-3d94-6c40-17e9d456d35a">
+					God Proxy
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="f8551a21-c960-5132-366a-f55ea63d97c3">
+					Hacker
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="481a055f-36b5-af82-ac49-24709f013e50">
+					Nano
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="d2fd7988-786f-40bc-54cb-c2ad557a639d">
+					Firestorm
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="745ac6b7-5b03-450d-6b01-577da127d7d2">
+					Zidonuke
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="ed943d3f-7a29-8339-11b9-cd0c06a1241b">
+					/yiff/
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="b33b69ae-6b6c-b395-0175-ce76a871173b">
+					Nicholas
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="c1936b62-6db5-1bc2-cfb6-54b040db74b4">
+					Shenanigans
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="5262d71a-88f7-ef40-3b15-00ea148ab4b5">
+					Gemini.Bot
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="9995490f-b248-46f2-91ed-910289676f99">
+					$
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="af8c86bd-c377-c331-7476-58abeb7af8fc">
+					The Sorcerer
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="f5feab57-bde5-2074-97af-517290213eaa">
+					Onyx
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="81b3e921-ee31-aa57-ff9b-ec1f28e41da1">
+					Infinity
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Ascent" 
+					value="4e6c4027-9bbd-2dc5-2c00-c55a08fd49d1">
+					DOWN SYNDROME
+				</combo_item>
 			</combo_box>
 			<check_box bottom_delta="-23" control_name="AscentShowSelfTag" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Display client tag to self" left_delta="-24"
-				tool_tip="Choose whether others see that you enjoy Singularity."
+				tool_tip="Choose whether others see that you enjoy Impostor."
 				mouse_opaque="true" name="show_self_tag_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="-20" control_name="AscentShowSelfTagColor" enabled="true"

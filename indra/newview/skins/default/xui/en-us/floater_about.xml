@@ -2,7 +2,7 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
      can_resize="false" height="440" min_height="100" min_width="100"
      name="floater_about" rect_control="FloaterAboutRect"
-     title="About Singularity Viewer" width="470">
+     title="About Impostor" width="470">
 	   <tab_container
 		 follows="all" 
 		 bottom="10"

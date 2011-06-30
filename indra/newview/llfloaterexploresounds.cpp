@@ -5,14 +5,18 @@
 #include "llfloaterexploresounds.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
+#include "lllocalinventory.h"
 #include "llagent.h"
 #include "llviewerwindow.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
+#include "llviewerparcelmgr.h"
+#include "llparcel.h"
+#include "llchat.h"
 #include "llfloaterchat.h"
 #include "llfloaterblacklist.h"
 
-static const size_t num_collision_sounds = 28;
+static const size_t num_collision_sounds = 29;
 const LLUUID collision_sounds[num_collision_sounds] =
 {
 	LLUUID("dce5fdd4-afe4-4ea1-822f-dd52cac46b08"),
@@ -42,7 +46,8 @@ const LLUUID collision_sounds[num_collision_sounds] =
 	LLUUID("be582e5d-b123-41a2-a150-454c39e961c8"),
 	LLUUID("c70141d4-ba06-41ea-bcbc-35ea81cb8335"),
 	LLUUID("7d1826f4-24c4-4aac-8c2e-eff45df37783"),
-	LLUUID("063c97d3-033a-4e9b-98d8-05c8074922cb")
+	LLUUID("063c97d3-033a-4e9b-98d8-05c8074922cb"),
+	LLUUID("e8af4a28-aa83-4310-a7c4-c047e15ea0df") //Step sound
 };
 
 LLFloaterExploreSounds* LLFloaterExploreSounds::sInstance;
@@ -76,7 +81,11 @@ BOOL LLFloaterExploreSounds::postBuild(void)
 	childSetDoubleClickCallback("sound_list", handle_play_locally, this);
 
 	childSetAction("play_locally_btn", handle_play_locally, this);
+	childSetAction("play_in_world_btn", handle_play_in_world, this);
+	childSetAction("play_ambient_btn", handle_play_ambient, this);
 	childSetAction("look_at_btn", handle_look_at, this);
+	childSetAction("open_btn", handle_open, this);
+	childSetAction("copy_uuid_btn", handle_copy_uuid, this);
 	childSetAction("stop_btn", handle_stop, this);
 	childSetAction("bl_btn", blacklistSound, this);
 
@@ -308,6 +317,68 @@ void LLFloaterExploreSounds::handle_play_locally(void* user_data)
 		}
 	}
 }
+// static
+void LLFloaterExploreSounds::handle_play_in_world(void* user_data)
+{
+	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
+	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
+	std::vector<LLScrollListItem*> selection = list->getAllSelected();
+	std::vector<LLScrollListItem*>::iterator selection_iter = selection.begin();
+	std::vector<LLScrollListItem*>::iterator selection_end = selection.end();
+	for( ; selection_iter != selection_end; ++selection_iter)
+	{
+		LLSoundHistoryItem item = floater->getItem((*selection_iter)->getValue());
+		if(item.mID.isNull()) continue;
+
+		LLMessageSystem* msg = gMessageSystem;
+		msg->newMessageFast(_PREHASH_SoundTrigger);
+		msg->nextBlockFast(_PREHASH_SoundData);
+		msg->addUUIDFast(_PREHASH_SoundID, item.mAssetID);
+		// Client untrusted, ids set on sim
+		msg->addUUIDFast(_PREHASH_OwnerID, LLUUID::null );
+		msg->addUUIDFast(_PREHASH_ObjectID, LLUUID::null );
+		msg->addUUIDFast(_PREHASH_ParentID, LLUUID::null );
+		msg->addU64Fast(_PREHASH_Handle, gAgent.getRegion()->getHandle());
+		LLVector3 position = gAgent.getPositionAgent();
+		msg->addVector3Fast(_PREHASH_Position, position);
+		msg->addF32Fast(_PREHASH_Gain, 1.0f);
+
+		gAgent.sendMessage();
+	}
+}
+
+// static
+void LLFloaterExploreSounds::handle_play_ambient(void* user_data)
+{
+	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
+	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
+	std::vector<LLScrollListItem*> selection = list->getAllSelected();
+	std::vector<LLScrollListItem*>::iterator selection_iter = selection.begin();
+	std::vector<LLScrollListItem*>::iterator selection_end = selection.end();
+	for( ; selection_iter != selection_end; ++selection_iter)
+	{
+		LLSoundHistoryItem item = floater->getItem((*selection_iter)->getValue());
+		if(item.mID.isNull()) continue;
+		int gain = 0.01f;
+		for(int i = 0; i < 2; i++)
+		{
+			gMessageSystem->newMessageFast(_PREHASH_SoundTrigger);
+			gMessageSystem->nextBlockFast(_PREHASH_SoundData);
+			gMessageSystem->addUUIDFast(_PREHASH_SoundID, item.mAssetID);
+			gMessageSystem->addUUIDFast(_PREHASH_OwnerID, LLUUID::null);
+			gMessageSystem->addUUIDFast(_PREHASH_ObjectID, LLUUID::null);
+			gMessageSystem->addUUIDFast(_PREHASH_ParentID, LLUUID::null);
+			gMessageSystem->addU64Fast(_PREHASH_Handle, gAgent.getRegion()->getHandle());
+			LLVector3d	pos = -from_region_handle(gAgent.getRegion()->getHandle());
+			gMessageSystem->addVector3Fast(_PREHASH_Position, (LLVector3)pos);
+			gMessageSystem->addF32Fast(_PREHASH_Gain, gain);
+
+			gMessageSystem->sendReliable(gAgent.getRegionHost());
+
+			gain = 1.0f;
+		}
+	}
+}
 
 // static
 void LLFloaterExploreSounds::handle_look_at(void* user_data)
@@ -345,6 +416,39 @@ void LLFloaterExploreSounds::handle_look_at(void* user_data)
 }
 
 // static
+void LLFloaterExploreSounds::handle_open(void* user_data)
+{
+	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
+	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
+	std::vector<LLScrollListItem*> selection = list->getAllSelected();
+	std::vector<LLScrollListItem*>::iterator selection_iter = selection.begin();
+	std::vector<LLScrollListItem*>::iterator selection_end = selection.end();
+	std::vector<LLUUID> asset_list;
+	for( ; selection_iter != selection_end; ++selection_iter)
+	{
+		LLSoundHistoryItem item = floater->getItem((*selection_iter)->getValue());
+		if(item.mID.isNull()) continue;
+		// Unique assets only
+		if(std::find(asset_list.begin(), asset_list.end(), item.mAssetID) == asset_list.end())
+		{
+			asset_list.push_back(item.mAssetID);
+			LLUUID inv_item = LLLocalInventory::addItem(item.mAssetID.asString(), LLAssetType::AT_SOUND, item.mAssetID, true);
+		}
+	}
+}
+
+// static
+void LLFloaterExploreSounds::handle_copy_uuid(void* user_data)
+{
+	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
+	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
+	LLUUID selection = list->getSelectedValue().asUUID(); // Single item only
+	LLSoundHistoryItem item = floater->getItem(selection);
+	if(item.mID.isNull()) return;
+
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item.mAssetID.asString()));
+}
+
 void LLFloaterExploreSounds::handle_stop(void* user_data)
 {
 	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;

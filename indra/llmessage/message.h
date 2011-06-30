@@ -187,6 +187,9 @@ enum EMessageException
 	MX_WROTE_PAST_BUFFER_SIZE // wrote past buffer size in zero code expand
 };
 typedef void (*msg_exception_callback)(LLMessageSystem*,void*,EMessageException);
+// <edit> VWR-2546
+typedef void (*message_handler_func_t)(LLMessageSystem *msgsystem, void **user_data);
+// </edit>
 
 
 // message data pieces are used to collect the data called for by the message template
@@ -218,6 +221,12 @@ class LLMessageSystem : public LLMessageSenderInterface
  private:
 	U8					mSendBuffer[MAX_BUFFER_SIZE];
 	S32					mSendSize;
+	// <edit>
+	U32 mSpoofProtectionLevel;
+	std::vector<LLNetCanary*> mCanaries;
+	std::map<U32, LLNetCanary::entry> mCanaryEntries;
+	void (*mSpoofDroppedCallback)(LLNetCanary::entry);
+	// </edit>
 
 	bool				mBlockUntrustedInterface;
 	LLHost				mUntrustedInterface;
@@ -314,11 +323,29 @@ public:
 
 
 	// methods for building, sending, receiving, and handling messages
-	void	setHandlerFuncFast(const char *name, void (*handler_func)(LLMessageSystem *msgsystem, void **user_data), void **user_data = NULL);
-	void	setHandlerFunc(const char *name, void (*handler_func)(LLMessageSystem *msgsystem, void **user_data), void **user_data = NULL)
+	// <edit> VWR-2546
+	//void	setHandlerFuncFast(const char *name, void (*handler_func)(LLMessageSystem *msgsystem, void **user_data), void **user_data = NULL);
+	//void	setHandlerFunc(const char *name, void (*handler_func)(LLMessageSystem *msgsystem, void **user_data), void **user_data = NULL)
+	void setHandlerFuncFast(const char *name, message_handler_func_t, void **user_data = NULL);
+	void setHandlerFunc(const char *name, message_handler_func_t handler_func, void **user_data = NULL)
+	// </edit>
 	{
 		setHandlerFuncFast(LLMessageStringTable::getInstance()->getString(name), handler_func, user_data);
 	}
+
+	// <edit> VWR-2546
+	void addHandlerFuncFast(const char *name, message_handler_func_t, void **user_data = NULL);
+	void addHandlerFunc(const char *name, message_handler_func_t handler_func, void **user_data = NULL)
+	{
+		addHandlerFuncFast(LLMessageStringTable::getInstance()->getString(name), handler_func, user_data);
+	}
+
+	void delHandlerFuncFast(const char *name, message_handler_func_t);
+	void delHandlerFunc(const char *name, message_handler_func_t handler_func)
+	{
+		delHandlerFuncFast(LLMessageStringTable::getInstance()->getString(name), handler_func);
+	}
+	// </edit>
 
 	// Set a callback function for a message system exception.
 	void setExceptionFunc(EMessageException exception, msg_exception_callback func, void* data = NULL);
@@ -616,6 +643,11 @@ public:
 	// Change this message to be UDP black listed.
 	void banUdpMessage(const std::string& name);
 
+	// <edit>
+	void startSpoofProtection(U32 level);
+	void stopSpoofProtection();
+	void setSpoofDroppedCallback(void (*callback)(LLNetCanary::entry));
+	// </edit>
 private:
 	// A list of the circuits that need to be sent DenyTrustedCircuit messages.
 	typedef std::set<LLHost> host_set_t;

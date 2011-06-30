@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel top="20" left="10" height="400" width="517" follows="left|top|right|bottom"
-	border="true" label="Singularity" name="ascsys" enabled="true" mouse_opaque="true">
-	<tab_container label="Singularity System" bottom="0" height="440" width="497" left="0"
+	border="true" label="Impostor" name="ascsys" enabled="true" mouse_opaque="true">
+	<tab_container label="Impostor System" bottom="0" height="440" width="497" left="0"
 		name="Ascent System" tab_min_width="70" tab_position="top">
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			follows="left|top|right|bottom" label="General" name="User Interface">
@@ -448,6 +448,23 @@ Use #f for user's first name, #l for last name,
 		</panel>
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Security" name="Security">
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom="-20" drop_shadow_visible="true" enabled="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="12"
+			     mouse_opaque="false" name="text_box" v_pad="0" width="500">
+				IP Spoofing Protection (0 being off, 3 being highest,
+anything higher than 1 may bluescreen Windows in tcpip.sys)
+			</text>
+			 <slider bottom_delta="-37" can_edit_text="false"
+			     decimal_digits="0" enabled="true" follows="left|top" height="15"
+			     increment="1" initial_val="0" left_delta="0" max_val="3" min_val="0"
+			     mouse_opaque="true" control_name="SpoofProtectionLevel" name="ip_spoof_slider" show_text="true"
+			     width="180" />
+			<check_box bottom_delta="-25" control_name="SpoofProtectionAlerts" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+		    	label="Enable Alerts" left="10"
+			    mouse_opaque="true" name="enable_alerts" radio_style="false"
+		    	width="400" />
 			 <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 		    	label="Broadcast Viewer Effects (Does not include beams)" left="10"

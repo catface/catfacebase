@@ -118,7 +118,11 @@ class LLFileEnableUpload : public view_listener_t
 #if LL_WINDOWS
 static std::string SOUND_EXTENSIONS = "wav";
 static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
-static std::string ANIM_EXTENSIONS =  "bvh anim animatn";
+static std::string ANIM_EXTENSIONS =  "bvh anim animatn neil";
+//<edit>
+static std::string WEAR_EXTENSIONS =  "xml shape skin hair eyes shirt pants shoes socks jacket gloves undershirt underpants skirt";
+static std::string GEST_EXTENSIONS =  "xml gesture";
+//</edit>
 #ifdef _CORY_TESTING
 static std::string GEOMETRY_EXTENSIONS = "slg";
 #endif
@@ -140,6 +144,12 @@ std::string build_extensions_string(LLFilePicker::ELoadFilter filter)
 		return ANIM_EXTENSIONS;
 	case LLFilePicker::FFLOAD_SLOBJECT:
 		return SLOBJECT_EXTENSIONS;
+//<edit>
+	case LLFilePicker::FFLOAD_WEAR:
+		return WEAR_EXTENSIONS;
+	case LLFilePicker::FFLOAD_GEST:
+		return GEST_EXTENSIONS;
+//</edit>
 #ifdef _CORY_TESTING
 	case LLFilePicker::FFLOAD_GEOMETRY:
 		return GEOMETRY_EXTENSIONS;
@@ -439,6 +449,37 @@ class LLFileImportXML : public view_listener_t
 	{
 		LLFilePicker& picker = LLFilePicker::instance();
 		if (!picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+		{
+			return true;
+		}
+		std::string file_name = picker.getFirstFile();
+		new LLFloaterXmlImportOptions(new LLXmlImportOptions(file_name));
+		return true;
+	}
+};
+
+class LLFileImportWear : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFilePicker& picker = LLFilePicker::instance();
+		if (!picker.getOpenFile(LLFilePicker::FFLOAD_WEAR))
+		{
+			return true;
+		}
+		std::string file_name = picker.getFirstFile();
+		new LLFloaterXmlImportOptions(new LLXmlImportOptions(file_name));
+		return true;
+	}
+};
+
+
+class LLFileImportGesture : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFilePicker& picker = LLFilePicker::instance();
+		if (!picker.getOpenFile(LLFilePicker::FFLOAD_GEST))
 		{
 			return true;
 		}
@@ -929,14 +970,62 @@ void upload_new_resource(const std::string& src_filename, std::string name,
                  llinfos << "Couldn't open .lin file " << src_filename << llendl;	 	
          }	 	
 	}
+	else if(exten == "ogg")
+	{
+		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
+		filename = src_filename;
+	}
 	else if (exten == "bvh")
 	{
-		error_message = llformat("We do not currently support bulk upload of animation files\n");
-		upload_error(error_message, "DoNotSupportBulkAnimationUpload", filename, args);
-		return;
+		// <edit> THE FUCK WE DON'T
+		//error_message = llformat("We do not currently support bulk upload of animation files\n");
+		//upload_error(error_message, "DoNotSupportBulkAnimationUpload", filename, args);
+		//return;
+		asset_type = LLAssetType::AT_ANIMATION;
+		S32 file_size;
+		LLAPRFile fp;
+		
+		if(!fp.open(src_filename, LL_APR_RB, LLAPRFile::local, &file_size))
+		{
+			args["ERROR_MESSAGE"] = llformat("Couldn't read file %s\n", src_filename.c_str());
+			LLNotifications::instance().add("ErrorMessage", args);
+			return;
+		}
+		char* file_buffer = new char[file_size + 1];
+		if(!fp.read(file_buffer, file_size))
+		{
+			fp.close();
+			delete[] file_buffer;
+			args["ERROR_MESSAGE"] = llformat("Couldn't read file %s\n", src_filename.c_str());
+			LLNotifications::instance().add("ErrorMessage", args);
+			return;
+		}
+		  ELoadStatus load_status = E_ST_OK;
+			S32 line_number = 0; 
+			 LLBVHLoader* loaderp = new LLBVHLoader(file_buffer, load_status, line_number);
+			///  LLBVHLoader* loaderp = new LLBVHLoader(file_buffer);
+		{
+			fp.close();
+			delete[] file_buffer;
+			args["ERROR_MESSAGE"] = llformat("Couldn't convert file %s to internal animation format\n", src_filename.c_str());
+			LLNotifications::instance().add("ErrorMessage", args);
+			return;
+		}
+		S32 buffer_size = loaderp->getOutputSize();
+		U8* buffer = new U8[buffer_size];
+		LLDataPackerBinaryBuffer dp(buffer, buffer_size);
+		loaderp->serialize(dp);
+		LLAPRFile apr_file;
+		apr_file.open(filename, LL_APR_WB, LLAPRFile::local);
+		apr_file.write(buffer, buffer_size);
+		delete[] file_buffer;
+		delete[] buffer;
+		fp.close();
+		apr_file.close();
+		// </edit>
 	}
 	// <edit>
-	else if (exten == "anim" || exten == "animatn")
+	else if (exten == "animatn" || exten == "anim" || exten == "neil")
 	{
 		asset_type = LLAssetType::AT_ANIMATION;
 		filename = src_filename;
@@ -944,6 +1033,26 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	else if(exten == "j2k" || exten == "jp2" || exten == "j2c")
 	{
 		asset_type = LLAssetType::AT_TEXTURE;
+		filename = src_filename;
+	}
+	else if(exten == "gesture")
+	{
+		asset_type = LLAssetType::AT_GESTURE;
+		filename = src_filename;
+	}
+	else if(exten == "notecard")
+	{
+		asset_type = LLAssetType::AT_NOTECARD;
+		filename = src_filename;
+	}
+	else if(exten == "lsl")
+	{
+		asset_type = LLAssetType::AT_LSL_TEXT;
+		filename = src_filename;
+	}
+	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing")
+	{
+		asset_type = LLAssetType::AT_CLOTHING;
 		filename = src_filename;
 	}
 	// </edit>
@@ -1041,7 +1150,7 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 		item_id.generate();
 		LLPermissions* perms = new LLPermissions();
 		perms->set(LLPermissions::DEFAULT);
-		perms->setOwnerAndGroup(gAgentID, gAgentID, gAgentID, false);
+		perms->setOwnerAndGroup(LLUUID::null, LLUUID::null, LLUUID::null, false);
 
 
 		perms->setMaskBase(PERM_ALL);
@@ -1351,6 +1460,9 @@ void init_menu_file()
 	// <edit>
 	(new LLFileImportXML())->registerListener(gMenuHolder, "File.ImportXML");
 	(new LLFileEnableImportXML())->registerListener(gMenuHolder, "File.EnableImportXML");
+	(new LLFileImportWear())->registerListener(gMenuHolder, "File.ImportWear");
+	(new LLFileImportGesture())->registerListener(gMenuHolder, "File.ImportGesture");
+
 	// </edit>
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");
 	(new LLFileCloseAllWindows())->registerListener(gMenuHolder, "File.CloseAllWindows");

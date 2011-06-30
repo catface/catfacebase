@@ -38,6 +38,13 @@
 #include "llstat.h"
 #include "llstl.h"
 
+// <edit> VWR-2546
+#include "llmsgvariabletype.h"
+#include <list>
+#include <algorithm>
+#include <functional>
+// </edit>
+
 class LLMsgVarData
 {
 public:
@@ -82,7 +89,7 @@ protected:
 class LLMsgBlkData
 {
 public:
-        LLMsgBlkData(const char *name, S32 blocknum) : mBlockNumber(blocknum), mTotalSize(-1) 
+	LLMsgBlkData(const char *name, S32 blocknum) : mOffset(-1), mBlockNumber(blocknum), mTotalSize(-1) 
 	{ 
 		mName = (char *)name; 
 	}
@@ -108,6 +115,7 @@ public:
 		temp->addData(data, size, type, data_size);
 	}
 
+	S32									mOffset;
 	S32									mBlockNumber;
 	typedef LLDynamicArrayIndexed<LLMsgVarData, const char *, 8> msg_var_data_map_t;
 	msg_var_data_map_t					mMemberVarData;
@@ -135,6 +143,7 @@ public:
 	void addDataFast(char *blockname, char *varname, const void *data, S32 size, EMsgVariableType type, S32 data_size = -1);
 
 public:
+	S32									mOffset;
 	typedef std::map<char*, LLMsgBlkData*> msg_blk_data_map_t;
 	msg_blk_data_map_t					mMemberBlocks;
 	char								*mName;
@@ -269,6 +278,32 @@ enum EMsgDeprecation
 	MD_DEPRECATED
 };
 
+// <edit> VWR-2546
+class LLMessageTemplateHandlerEntry
+{
+public:
+	LLMessageTemplateHandlerEntry(message_handler_func_t handler, void **userdata = NULL) :
+		mHandlerFunc(handler), mUserData(userdata) {}
+
+	void call(LLMessageSystem *msgsystem) const { mHandlerFunc(msgsystem, mUserData); }
+
+	bool operator==(const LLMessageTemplateHandlerEntry&a) { return mHandlerFunc == a.mHandlerFunc; }
+private:
+	// message handler function (this is set by each application)
+	message_handler_func_t mHandlerFunc;
+	void **mUserData;
+};
+
+class callHandler : public std::unary_function<LLMessageTemplateHandlerEntry, void>
+{
+public:
+	callHandler(LLMessageSystem *msg) : mMsg(msg) {}
+	void operator()(const LLMessageTemplateHandlerEntry& a) const { a.call(mMsg); }
+private:
+	LLMessageSystem *mMsg;
+};
+// </edit>
+
 class LLMessageTemplate
 {
 public:
@@ -290,9 +325,12 @@ public:
 		mTotalDecodeTime(0.f),
 		mMaxDecodeTimePerMsg(0.f),
 		mBanFromTrusted(false),
-		mBanFromUntrusted(false),
-		mHandlerFunc(NULL), 
-		mUserData(NULL)
+		// <edit> VWR-2546
+		//mBanFromUntrusted(false),
+		//mHandlerFunc(NULL),
+		//mUserData(NULL)
+		mBanFromUntrusted(false)
+		// </edit>
 	{ 
 		mName = LLMessageStringTable::getInstance()->getString(name);
 	}
@@ -360,21 +398,54 @@ public:
 		return mDeprecation;
 	}
 	
-	void setHandlerFunc(void (*handler_func)(LLMessageSystem *msgsystem, void **user_data), void **user_data)
+	// <edit> VWR-2546
+
+	void addHandlerFunc(message_handler_func_t handler, void **user_data)
 	{
-		mHandlerFunc = handler_func;
-		mUserData = user_data;
+		LLMessageTemplateHandlerEntry h(handler, user_data);
+		if ( std::find(mHandlers.begin(), mHandlers.end(), h ) != mHandlers.end() )
+			return;
+
+		mHandlers.push_back( h );
 	}
+
+	//void setHandlerFunc(void (*handler_func)(LLMessageSystem *msgsystem, void **user_data), void **user_data)
+	//{
+	//	mHandlerFunc = handler_func;
+	//	mUserData = user_data;
+	//}
+
+	void setHandlerFunc(message_handler_func_t handler, void **user_data)
+	{
+		mHandlers.clear();
+		if(handler)
+			addHandlerFunc(handler, user_data);
+	}
+
+	void delHandlerFunc(message_handler_func_t handler)
+	{
+		mHandlers.remove( LLMessageTemplateHandlerEntry(handler) );
+	}
+
+	// </edit>
 
 	BOOL callHandlerFunc(LLMessageSystem *msgsystem) const
 	{
-		if (mHandlerFunc)
-		{
-            LLPerfBlock msg_cb_time("msg_cb", mName);
-			mHandlerFunc(msgsystem, mUserData);
-			return TRUE;
-		}
-		return FALSE;
+		// <edit> VWR-2546
+		//if (mHandlerFunc)
+		//{
+        //    LLPerfBlock msg_cb_time("msg_cb", mName);
+		//	mHandlerFunc(msgsystem, mUserData);
+		//	return TRUE;
+		//}
+		//return FALSE;
+		if(mHandlers.empty())
+			return FALSE;
+		// Allow handlers to remove themselves...
+		std::list<LLMessageTemplateHandlerEntry> handlers(mHandlers);
+		std::for_each(handlers.begin(), handlers.end(), callHandler(msgsystem));
+		return TRUE;
+		// </edit>
 	}
 
 	bool isUdpBanned() const
@@ -420,8 +491,11 @@ public:
 
 private:
 	// message handler function (this is set by each application)
-	void									(*mHandlerFunc)(LLMessageSystem *msgsystem, void **user_data);
-	void									**mUserData;
+	// <edit> VWR-2546
+	//void									(*mHandlerFunc)(LLMessageSystem *msgsystem, void **user_data);
+	//void									**mUserData;
+	std::list<LLMessageTemplateHandlerEntry> mHandlers;
+	// </edit>
 };
 
 #endif // LL_LLMESSAGETEMPLATE_H

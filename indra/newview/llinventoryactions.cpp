@@ -89,8 +89,6 @@
 // <edit>
 #include "lllocalinventory.h"
 #include "llinventorybackup.h"
-//#include "llcheats.h"
-//#include "llnotecardmagic.h"
 // </edit>
 
 const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not)
@@ -119,6 +117,24 @@ bool doToSelected(LLFolderView* folder, std::string action)
 	{	
 		LLInventoryClipboard::instance().reset();
 	}
+	// <edit>
+	if("save_as" == action)
+	{
+		LLInventoryBackup::save(folder);
+		return true;
+	}
+	else if("save_invcache" == action)
+	{
+		LLFilePicker& file_picker = LLFilePicker::instance();
+		if(file_picker.getSaveFile( LLFilePicker::FFSAVE_INVGZ ))
+		{
+			std::string file_name = file_picker.getFirstFile();
+			LLLocalInventory::saveInvCache(file_name, folder);
+		}
+		return true;
+	}
+	
+	// </edit>
 
 	std::set<LLUUID> selected_items;
 	folder->getSelectionList(selected_items);
@@ -705,6 +721,7 @@ class LLBeginIMSession : public inventory_panel_listener_t
 	}
 };
 
+//void rez_attachment(LLViewerInventoryItem* item, LLViewerJointAttachment* attachment);
 class LLAttachObject : public inventory_panel_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -739,7 +756,7 @@ class LLAttachObject : public inventory_panel_listener_t
 
 		if(item && gInventory.isObjectDescendentOf(id, gAgent.getInventoryRootID()))
 		{
-			rez_attachment(item, attachmentp);
+		rez_attachment(item, attachmentp);
 		}
 		else if(item && item->isComplete())
 		{

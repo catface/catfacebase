@@ -4,7 +4,6 @@
 #include "llfloaterexport.h"
 #include "lluictrlfactory.h"
 #include "llsdutil.h"
-#include "llsdutil_math.h"
 #include "llsdserialize.h"
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"
@@ -22,7 +21,11 @@
 #include "lltexturecache.h"
 #include "llimage.h"
 #include "llappviewer.h"
+#include "llsdutil_math.h"
 #include "llimagej2c.h"
+
+LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
+LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 
 std::vector<LLFloaterExport*> LLFloaterExport::instances;
 
@@ -229,7 +232,7 @@ LLSD LLExportable::asLLSD()
 		{
 			LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
 			if( (viewer_param->getWearableType() == type_s32) && 
-				(viewer_param->isTweakable()) )
+				(viewer_param->getGroup() == VISUAL_PARAM_GROUP_TWEAKABLE) )
 			{
 				param_map[llformat("%d", viewer_param->getID())] = viewer_param->getWeight();
 			}
@@ -287,7 +290,20 @@ LLFloaterExport::~LLFloaterExport()
 BOOL LLFloaterExport::postBuild(void)
 {
 	if(!mSelection) return TRUE;
-	if(mSelection->getRootObjectCount() < 1) return TRUE;
+	std::map<LLViewerObject*, bool> avatars; // moved from bottom
+    LLViewerObject* foo =LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+    LLVOAvatar* avatar = find_avatar_from_object(foo); 
+    if (avatar && mSelection->getRootObjectCount() < 1) // check if avatar and only avatar
+    {
+         if(!avatars[foo])
+         {
+             avatars[foo] = true;// is avatar and not in the avatar map list also i add
+         }
+    }
+    else
+    {
+        if(mSelection->getRootObjectCount() < 1) return TRUE; // there is some prims ( not avatar alone) 
+    }
 
 	// New stuff: Populate prim name map
 
@@ -305,7 +321,7 @@ BOOL LLFloaterExport::postBuild(void)
 
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("export_list");
 
-	std::map<LLViewerObject*, bool> avatars;
+//	std::map<LLViewerObject*, bool> avatars;
 
 	for (LLObjectSelection::valid_root_iterator iter = mSelection->valid_root_begin();
 		 iter != mSelection->valid_root_end(); iter++)

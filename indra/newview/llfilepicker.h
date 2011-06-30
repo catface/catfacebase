@@ -94,8 +94,11 @@ public:
 		// <edit>
 		FFLOAD_INVGZ = 9,
 		FFLOAD_AO = 10,
+		
 		FFLOAD_BLACKLIST = 11,
-		FFLOAD_LSL = 12
+		FFLOAD_LSL = 12,
+		FFLOAD_WEAR = 13,
+		FFLOAD_GEST = 14
 		// </edit>
 	};
 

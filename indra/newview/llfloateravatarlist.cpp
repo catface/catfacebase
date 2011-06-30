@@ -56,6 +56,12 @@
 
 //<edit>
 #include "llviewermenu.h"
+#include "llfloaterexport.h"
+#include "llfloaterexploreanimations.h"
+#include "llfloateravatartextures.h"
+#include "llfloaterattachments.h"
+LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
+LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 //</edit>
 
 /**
@@ -326,7 +332,12 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("next_in_list_btn", onClickNextInList, this);
 	childSetAction("prev_marked_btn", onClickPrevMarked, this);
 	childSetAction("next_marked_btn", onClickNextMarked, this);
-	
+	//<edit>
+	childSetAction("anims_btn", onClickAnim, this);
+	childSetAction("export_dude_btn", onClickExport, this);
+	childSetAction("debug_btn", onClickDebug, this);
+	childSetAction("follow_btn", onClickRainbow, this);
+	//<edit>
 	childSetAction("get_key_btn", onClickGetKey, this);
 
 	childSetAction("freeze_btn", onClickFreeze, this);
@@ -338,6 +349,7 @@ BOOL LLFloaterAvatarList::postBuild()
 
 	childSetAction("send_keys_btn", onClickSendKeys, this);
 
+
 	getChild<LLRadioGroup>("update_rate")->setSelectedIndex(gSavedSettings.getU32("RadarUpdateRate"));
 	childSetCommitCallback("update_rate", onCommitUpdateRate, this);
 
@@ -345,7 +357,9 @@ BOOL LLFloaterAvatarList::postBuild()
 	mAvatarList = getChild<LLScrollListCtrl>("avatar_list");
 	mAvatarList->sortByColumn("distance", TRUE);
 	mAvatarList->setCommitOnSelectionChange(TRUE);
-	childSetCommitCallback("avatar_list", onSelectName, this);
+	mAvatarList->setCallbackUserData(this);
+	mAvatarList->setCommitCallback(onSelectName);
+	mAvatarList->setDoubleClickCallback(onClickFocus);
 	refreshAvatarList();
 
 	gIdleCallbacks.addFunction(LLFloaterAvatarList::callbackIdle);
@@ -1194,12 +1208,122 @@ void LLFloaterAvatarList::onClickGetKey(void *userdata)
 	if (NULL == item) return;
 
 	LLUUID agent_id = item->getUUID();
-
+	LLChat chat;
+	chat.mText = "Key: "+agent_id.asString();
 	char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
 	agent_id.toString(buffer);
-
 	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+    LLFloaterChat::addChat(chat);
 }
+
+//static
+void LLFloaterAvatarList::onClickAnim(void *userdata)
+{
+	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
+
+	 if (NULL == simms) return;
+
+ LLUUID agent_id = simms->getUUID();
+  if(simms)
+  {
+   new LLFloaterExploreAnimations(agent_id); //temporary
+  }
+  return;
+ }
+
+void LLFloaterAvatarList::onClickExport(void *userdata)
+{
+ LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+  LLScrollListItem *item = self->mAvatarList->getFirstSelected();
+       if(!item) return;
+       LLViewerObject *obj=gObjectList.findObject(item->getUUID());
+       if(obj)
+        {
+   LLSelectMgr::getInstance()->selectObjectOnly(obj);
+   LLFloaterExport* floater = new LLFloaterExport();
+   floater->center();
+   LLSelectMgr::getInstance()->deselectAll();
+        }
+       return;
+}
+
+void LLFloaterAvatarList::onClickDebug(void *userdata)
+{
+ LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
+
+	 if (NULL == simms) return;
+
+ LLUUID agent_id = simms->getUUID();
+  if(simms)
+  {
+   LLFloaterAvatarTextures::show( simms->getUUID() );
+  }
+ return ;
+}
+
+
+void LLFloaterAvatarList::onClickRainbow(void *userdata)
+{
+ LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
+
+	 if (NULL == simms) return;
+
+ LLUUID agent_id = simms->getUUID();
+  if(simms)
+  {
+		 LLUUID effectid;
+	effectid.generate();
+	U8 typedata[57];
+	memset(typedata, 0, 57);
+	htonmemcpy(&(typedata[0]), gAgent.getID().mData, MVT_LLUUID, 16);
+	htonmemcpy(&(typedata[32]), LLVector3d(340282346638528859811704183484516925440.0, 340282346638528859811704183484516925440.0, 340282346638528859811704183484516925440.0).mdV, MVT_LLVector3d, 24);
+	U8 pointattype = (U8)2;
+	htonmemcpy(&(typedata[56]), &pointattype, MVT_U8, 1);
+	LLMessageSystem *msg = gMessageSystem;
+			msg->newMessageFast(_PREHASH_AgentAnimation);
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	bool start = true;
+	msg->nextBlockFast(_PREHASH_AnimationList);
+	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("a7b1669c-fa67-0242-4136-79b7a8a3daa0"));
+	msg->addBOOLFast(_PREHASH_StartAnim, start);
+	msg->newMessageFast(_PREHASH_AgentAnimation);
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->nextBlockFast(_PREHASH_AnimationList);
+	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("f65380e1-40ee-b86b-c6b8-350c4779631a"));
+	msg->addBOOLFast(_PREHASH_StartAnim, start);
+	msg->nextBlockFast(_PREHASH_AnimationList);
+	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("a7b1669c-fa67-0242-4136-79b7a8a3daa0"));
+	msg->addBOOLFast(_PREHASH_StartAnim, start);
+	msg->nextBlockFast(_PREHASH_AnimationList);
+	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("e0da644a-cf90-c769-bd33-5e996cd7f254"));
+	msg->addBOOLFast(_PREHASH_StartAnim, start);
+	msg->newMessageFast(_PREHASH_ViewerEffect);
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->nextBlockFast(_PREHASH_Effect);
+	msg->addUUIDFast(_PREHASH_ID, effectid);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addU8Fast(_PREHASH_Type, (U8)LLHUDObject::LL_HUD_EFFECT_POINTAT);
+	msg->addF32Fast(_PREHASH_Duration, 1.0f);
+	msg->addBinaryDataFast(_PREHASH_Color, LLColor4U().mV, 4);
+	msg->addBinaryDataFast(_PREHASH_TypeData, typedata, 57);
+	msg->nextBlockFast(_PREHASH_PhysicalAvatarEventList);
+	msg->addBinaryDataFast(_PREHASH_TypeData, NULL, 0);
+	msg->sendMessage( gAgent.getRegion()->getHost());
+		 }
+ return ;
+}
+
+				
 //static
 void LLFloaterAvatarList::sendKeys()
 {
@@ -1627,3 +1751,4 @@ void LLFloaterAvatarList::onCommitUpdateRate(LLUICtrl*, void* userdata)
 
 	self->mUpdateRate = gSavedSettings.getU32("RadarUpdateRate") * 3 + 3;
 }
+

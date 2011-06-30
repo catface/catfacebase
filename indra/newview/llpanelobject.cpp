@@ -476,11 +476,20 @@ void LLPanelObject::getState( )
 	}
 
 	// can move or rotate only linked group with move permissions, or sub-object with move and modify perms
+	// <edit>
+	// Enables position, size, and rotation textboxes
+	// but they're also editable
+	// No arrow crap though
+	/*
 	BOOL enable_move	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_scale	= objectp->permMove() && objectp->permModify();
 	BOOL enable_rotate	= objectp->permMove() && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
+	*/
+	BOOL enable_move	= TRUE;
+	BOOL enable_scale	= TRUE;
+	BOOL enable_rotate	= TRUE;
+	// </edit>
 	BOOL enable_link	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
-	childSetEnabled("build_math_constants",true);
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
 						 && (selected_count == 1);
@@ -614,7 +623,15 @@ void LLPanelObject::getState( )
 
 	// BUG? Check for all objects being editable?
 	S32 roots_selected = LLSelectMgr::getInstance()->getSelection()->getRootObjectCount();
-	BOOL editable = root_objectp->permModify();
+	// <edit>
+	// Makes status and material available
+	// I would like it if they were semi-gray, you could copy the value,
+	// but not editable
+
+	//BOOL editable = root_objectp->permModify();
+	BOOL editable = TRUE;
+
+	// </edit>
 
 	// Select Single Message
 	childSetVisible("select_single", FALSE);

@@ -553,7 +553,7 @@ void LLFloaterNewLocalInventory::onClickOK(void* user_data)
 	}
 
 	LLFloaterNewLocalInventory::sLastCreatorId = creator_id;
-	floater->close();
+//	floater->close();
 }
 
 

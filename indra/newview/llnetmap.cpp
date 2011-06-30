@@ -699,7 +699,9 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 // [/RLVa:KB]
 		//msg.append( region->getName() );
 
-#ifndef LL_RELEASE_FOR_DOWNLOAD
+// <edit> hmm
+//#ifndef LL_RELEASE_FOR_DOWNLOAD
+// </edit>
 		std::string buffer;
 		msg.append("\n");
 		buffer = region->getHost().getHostName();
@@ -707,7 +709,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 		msg.append("\n");
 		buffer = region->getHost().getString();
 		msg.append(buffer);
-#endif
+//#endif
 		msg.append("\n");
 		msg.append(getToolTip());
 

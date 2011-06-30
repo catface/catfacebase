@@ -162,6 +162,7 @@
 
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
+#include "llnotecardmagic.h"
 
 #include <boost/tokenizer.hpp>
 
@@ -231,6 +232,75 @@ const BOOL SCRIPT_QUESTION_IS_CAUTION[SCRIPT_PERMISSION_EOF] =
 	FALSE,	// TrackYourCamera,
 	FALSE	// ControlYourCamera
 };
+
+template <typename T>
+class SH_SpamHandler
+{
+public:
+	SH_SpamHandler(const char *pToggleCtrl, const char *pDurCtrl, const char *pFreqCtrl) :
+		mDuration(pDurCtrl, 1.f),
+		mFrequency(pFreqCtrl, 5),
+		mEnabled(false)
+	{
+		gSavedSettings.getControl(pToggleCtrl)->getSignal()->connect(boost::bind(&SH_SpamHandler::CtrlToggle, this, _1));
+		CtrlToggle(gSavedSettings.getBOOL(pToggleCtrl));
+	}
+	bool CtrlToggle(const LLSD& newvalue)
+	{
+		bool on = newvalue.asBoolean();
+		if(on == mEnabled)
+			return true;
+		mEnabled = on;
+		mTimer.stop();
+		mActiveList.clear();
+		mBlockedList.clear();
+		return true;
+	}
+	bool isBlocked(const T &owner, const LLUUID &source_id, const char *pNotification, LLSD args=LLSD())
+	{
+		if(!mEnabled || isAgent(owner))
+			return false;
+		if(mBlockedList.find(owner) != mBlockedList.end())
+			return true;
+		if(mTimer.getStarted() && mTimer.getElapsedTimeF32() < mDuration)
+		{
+			typename std::map<const T,U32>::iterator it = mActiveList.insert(std::pair<const T, U32>(owner,0)).first;
+			if(++(it->second)>=mFrequency)
+			{
+				mBlockedList.insert(owner);
+				if(pNotification)
+				{
+					args["OWNER"] = owner;
+					args["SOURCE"] = source_id;
+					LLNotifications::getInstance()->add(pNotification,args);
+				}
+				return true;
+			}
+		}
+		else
+		{
+			mActiveList.clear();
+			mTimer.start();
+		}
+		return false;
+	}
+private:
+	//Owner is either a key, or a name. Do not look up perms since object may be unknown.
+	static bool isAgent(const T &owner);
+	bool mEnabled;
+	LLFrameTimer mTimer;
+	const LLCachedControl<F32> mDuration;
+	const LLCachedControl<U32> mFrequency;
+	std::map<const T,U32> mActiveList;
+	std::set<T> mBlockedList;
+};
+template<> bool SH_SpamHandler<LLUUID>::isAgent(const LLUUID &owner) { return gAgent.getID() == owner; }
+template<> bool SH_SpamHandler<std::string>::isAgent(const std::string &owner)
+{
+	std::string str;
+	gAgent.getName(str);
+	return str == owner;
+}
 
 bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
 {
@@ -901,6 +971,7 @@ void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 {
 	std::vector<LLUUID>::const_iterator it = items.begin();
 	std::vector<LLUUID>::const_iterator end = items.end();
+	LLUUID trash_id(gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH));
 	LLInventoryItem* item;
 	for(; it != end; ++it)
 	{
@@ -919,13 +990,21 @@ void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 		//if we are throttled, don't display them
 		if (check_offer_throttle(from_name, false))
 		{
-			// I'm not sure this is a good idea - Definitely a bad idea. HB
+			// I'm not sure this is a good idea.  JC
 			//bool show_keep_discard = item->getPermissions().getCreator() != gAgent.getID();
 			bool show_keep_discard = true;
 			switch(asset_type)
 			{
 			case LLAssetType::AT_NOTECARD:
+				/* <edit>
+				if(!gDontOpenNextNotecard)
+				{
+					gDontOpenNextNotecard = false;
+			*/// </edit>
 				open_notecard((LLViewerInventoryItem*)item, std::string("Note: ") + item->getName(), LLUUID::null, show_keep_discard, LLUUID::null, FALSE);
+				// <edit>
+		//}
+				// </edit>
 				break;
 			case LLAssetType::AT_LANDMARK:
 				open_landmark((LLViewerInventoryItem*)item, std::string("Landmark: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
@@ -1329,7 +1408,8 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 
 		log_message = "You decline " + mDesc + " from " + mFromName + ".";
 		chat.mText = log_message;
-		if( LLMuteList::getInstance()->isMuted(mFromID ) && ! LLMuteList::getInstance()->isLinden(mFromName) )  // muting for SL-42269
+		//if( LLMuteList::getInstance()->isMuted(mFromID ) && ! LLMuteList::getInstance()->isLinden(mFromName) )  // muting for SL-42269
+		if( LLMuteList::getInstance()->isMuted(mFromID) )  // muting for SL-42269
 		{
 			chat.mMuted = TRUE;
 		}
@@ -1627,10 +1707,26 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	
 	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
 	
-	chat.mMuted = is_muted && !is_linden;
+	//chat.mMuted = is_muted && !is_linden;
+	chat.mMuted = is_muted;
 	chat.mFromID = from_id;
 	chat.mFromName = name;
 	chat.mSourceType = (from_id.isNull() || (name == std::string(SYSTEM_FROM))) ? CHAT_SOURCE_SYSTEM : CHAT_SOURCE_AGENT;
+	
+	if(chat.mSourceType == CHAT_SOURCE_AGENT)
+	{
+		LLSD args;
+		args["FULL_NAME"] = name;
+		static SH_SpamHandler<LLUUID> avatar_spam_check("SGBlockGeneralSpam","SGSpamTime","SGSpamCount");
+		static SH_SpamHandler<LLUUID> object_spam_check("SGBlockGeneralSpam","SGSpamTime","SGSpamCount");
+		if(d==IM_FROM_TASK||d==IM_GOTO_URL||d==IM_FROM_TASK_AS_ALERT||d==IM_TASK_INVENTORY_OFFERED||d==IM_TASK_INVENTORY_ACCEPTED||d==IM_TASK_INVENTORY_DECLINED)
+		{
+			if(object_spam_check.isBlocked(from_id,session_id,"BlockedGeneralObjects",args))
+				return;
+		}
+		else if(avatar_spam_check.isBlocked(from_id,from_id,"BlockedGeneralAvatar",args))
+			return;
+	}
 
 	LLViewerObject *source = gObjectList.findObject(session_id); //Session ID is probably the wrong thing.
 	if (source)
@@ -2812,6 +2908,9 @@ void process_offer_callingcard(LLMessageSystem* msg, void**)
 		}
 		else
 		{
+			static SH_SpamHandler<LLUUID> spam_check("SGBlockCardSpam","SHSpamTime","SGSpamCount");
+			if(spam_check.isBlocked(source_id,source_id,"BlockedCards",args))
+				return;
 			LLNotifications::instance().add("OfferCallingCard", args, payload);
 		}
 	}
@@ -2985,6 +3084,14 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	// </edit>
 	if (chatter)
 	{
+		LLSD args;
+		args["FULL_NAME"] = from_name;
+		static SH_SpamHandler<LLUUID> avatar_spam_check("SGBlockChatSpam","SGChatSpamTime","SGChatSpamCount");
+		static SH_SpamHandler<LLUUID> object_spam_check("SGBlockChatSpam","SGChatSpamTime","SGChatSpamCount");
+		if(	(chatter->isAvatar()	&&	avatar_spam_check.isBlocked(from_id,from_id,"BlockedChatterAvatar",args)) ||
+			(!chatter->isAvatar()	&&	object_spam_check.isBlocked(owner_id,from_id,"BlockedChatterObjects",args)) )
+			return;
+
 		chat.mPosAgent = chatter->getPositionAgent();
 		
 		// Make swirly things only for talking objects. (not script debug messages, though)
@@ -3077,7 +3184,15 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 								avatar->clearNameFromChat();
 						}
 					} else {
+						if (key.isNull()) {
+							llwarns << "Nameplate from chat on NULL avatar (ignored)" << llendl;
+							return;
+						}	
 						LLVOAvatar *avatar = gObjectList.findAvatar(key);
+						if (!avatar) {
+							llwarns << "Nameplate from chat on invalid avatar (ignored)" << llendl;
+							return;							
+						}
 						if (mesg.size() == 39) {
 							avatar->clearNameFromChat();
 						} else if (mesg[39] == ' ') {
@@ -3371,10 +3486,12 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		// F		T		T		T				*			No			No
 		// T		*		*		*				F			Yes			Yes
 
-		chat.mMuted = is_muted && !is_linden;
+		//chat.mMuted = is_muted && !is_linden;
+		chat.mMuted = is_muted;
 		
 		if (!visible_in_chat_bubble 
-			&& (is_linden || !is_busy || is_owned_by_me))
+			//&& (is_linden || !is_busy || is_owned_by_me))
+			&& (!is_busy || is_owned_by_me))
 		{
 			// show on screen and add to history
 			check_translate_chat(mesg, chat, FALSE);
@@ -6358,17 +6475,22 @@ static LLNotificationFunctorRegistration callback_script_dialog_reg_2("ScriptDia
 void process_script_dialog(LLMessageSystem* msg, void**)
 {
 	S32 i;
-
 	LLSD payload;
+
+	LLUUID object_id;
+	msg->getUUID("Data", "ObjectID", object_id);
+
+	if (LLMuteList::getInstance()->isMuted(object_id))
+	{
+		return;
+	}
 
 	std::string message; 
 	std::string first_name;
 	std::string last_name;
 	std::string title;
 
-	LLUUID object_id;
 	S32 chat_channel;
-	msg->getUUID("Data", "ObjectID", object_id);
 	msg->getString("Data", "FirstName", first_name);
 	msg->getString("Data", "LastName", last_name);
 	msg->getString("Data", "ObjectName", title);
@@ -6428,6 +6550,10 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 	{
 		args["FIRST"] = first_name;
 		args["LAST"] = last_name;
+
+		static SH_SpamHandler<std::string> spam_check("SGBlockDialogSpam","SGSpamTime","SGSpamCount");
+		if(spam_check.isBlocked(first_name + " " + last_name,object_id,"BlockedDialogs",args))
+			return;
 
 		if (is_text_box)
 		{
@@ -6593,6 +6719,8 @@ void process_initiate_download(LLMessageSystem* msg, void**)
 
 void process_script_teleport_request(LLMessageSystem* msg, void**)
 {
+	if (!gSavedSettings.getBOOL("ScriptsCanShowUI")) return;
+	
 	std::string object_name;
 	std::string sim_name;
 	LLVector3 pos;

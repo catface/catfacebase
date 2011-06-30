@@ -9952,7 +9952,10 @@ void LLVOAvatar::dumpLocalTextures()
 				llinfos << "LocTex " << name << ": "
 						<< "Discard " << image->getDiscardLevel() << ", "
 						<< "(" << image->getWidth() << ", " << image->getHeight() << ") "
-#if !LL_RELEASE_FOR_DOWNLOAD
+// <edit>
+//#if !LL_RELEASE_FOR_DOWNLOAD
+#if 1
+// </edit>
 					// End users don't get to trivially see avatar texture IDs,
 					// makes textures easier to steal
 						<< image->getID() << " "

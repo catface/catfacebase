@@ -45,7 +45,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</map>
 		<key>AscentUpdateTagsOnLoad</key>
 		<map>
@@ -189,7 +189,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</map>
 		<key>AscentShowLookAt</key>
 		<map>
@@ -354,7 +354,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</map>
 		<key>AscentDisplayTotalScriptJumps</key>
 		<map>

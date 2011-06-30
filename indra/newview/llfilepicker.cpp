@@ -55,10 +55,11 @@ LLFilePicker LLFilePicker::sInstance;
 #define SOUND_FILTER L"Sounds (*.wav; *.ogg)\0*.wav;*.ogg\0"
 #define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png; *.jp2; *.j2k; *.j2c)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png;*.jp2;*.j2k;*.j2c\0"
 #define INVGZ_FILTER L"Inv cache (*.inv; *.inv.gz)\0*.inv;*.inv.gz\0"
-#define AO_FILTER L"Animation Override (*.ao)\0*.ao\0"
 #define BLACKLIST_FILTER L"Asset Blacklist (*.blacklist)\0*.blacklist\0"
+#define WEAR_FILTER L"Wearable (*.xml; *.shape; *.skin; *.hair; *.eyes; *.shirt; *.pants; *.shoes; *.socks ; *.jacket; *.gloves; *.undershirt; *.underpants; *.skirt)\0*.xml;*.shape;*.skin;*.hair;*.eyes;*.shirt;*.pants;*.shoes;*.socks ;*.jacket;*.gloves;*.undershirt;*.underpants;*.skirt)\0"
+#define GEST_FILTER L"Gesture (*.xml; *.gesture)\0*.xml;*.gesture\0"
 // <edit/>
-#define ANIM_FILTER L"Animations (*.bvh)\0*.bvh\0"
+#define ANIM_FILTER L"Animations (*.bvh; *.anim; *.animatn; *.neil)\0*.bvh;*.anim;*.animatn;*.neil\0"
 #ifdef _CORY_TESTING
 #define GEOMETRY_FILTER L"SL Geometry (*.slg)\0*.slg\0"
 #endif
@@ -202,16 +203,23 @@ BOOL LLFilePicker::setupFilter(ELoadFilter filter)
 		mOFN.lpstrFilter = INVGZ_FILTER \
 			L"\0";
 		break;
-
+/*
 	case FFLOAD_AO:
 		mOFN.lpstrFilter = AO_FILTER \
 			L"\0";
 		break;
-
+*/
 	case FFLOAD_BLACKLIST:
 		mOFN.lpstrFilter = BLACKLIST_FILTER \
 			L"\0";
 		break;
+	case FFLOAD_WEAR:
+		mOFN.lpstrFilter = WEAR_FILTER \
+			L"\0";
+		break;
+	case FFLOAD_GEST:
+		mOFN.lpstrFilter = GEST_FILTER \
+			L"\0";
 	// </edit>
 	default:
 		res = FALSE;
@@ -413,11 +421,11 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 	case FFSAVE_ANIM:
 		if (filename.empty())
 		{
-			wcsncpy( mFilesW,L"untitled.xaf", FILENAME_BUFFER_SIZE);	/*Flawfinder: ignore*/
+			wcsncpy( mFilesW,L"untitled.bvh", FILENAME_BUFFER_SIZE);	/*Flawfinder: ignore*/
 		}
-		mOFN.lpstrDefExt = L"xaf";
+		mOFN.lpstrDefExt = L"bvh";
 		mOFN.lpstrFilter =
-			L"XAF Anim File (*.xaf)\0*.xaf\0" \
+			L"Anim File (*.bvh)\0*.bvh\0" \
 			L"\0";
 		break;
 #ifdef _CORY_TESTING
@@ -755,12 +763,16 @@ Boolean LLFilePicker::navOpenFilterProc(AEDesc *theItem, void *info, void *callB
 						{
 							if (fileInfo.filetype != 'JPEG' && fileInfo.filetype != 'JPG ' && 
 								fileInfo.filetype != 'BMP ' && fileInfo.filetype != 'TGA ' &&
+								fileInfo.filetype != 'TIFF' && fileInfo.filetype != 'PSD ' &&
 								fileInfo.filetype != 'BMPf' && fileInfo.filetype != 'TPIC' &&
 								fileInfo.filetype != 'PNG ' &&
 								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("jpeg"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
 								CFStringCompare(fileInfo.extension, CFSTR("jpg"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
 								CFStringCompare(fileInfo.extension, CFSTR("bmp"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
 								CFStringCompare(fileInfo.extension, CFSTR("tga"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
+								CFStringCompare(fileInfo.extension, CFSTR("psd"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
+								CFStringCompare(fileInfo.extension, CFSTR("tiff"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
+								CFStringCompare(fileInfo.extension, CFSTR("tif"), kCFCompareCaseInsensitive) != kCFCompareEqualTo &&
 								CFStringCompare(fileInfo.extension, CFSTR("png"), kCFCompareCaseInsensitive) != kCFCompareEqualTo))
 								)
 							{

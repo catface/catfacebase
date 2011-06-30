@@ -30,7 +30,7 @@ set(LIBS_SERVER_DIR ${CMAKE_SOURCE_DIR}/${LIBS_SERVER_PREFIX})
 set(SCRIPTS_DIR ${CMAKE_SOURCE_DIR}/${SCRIPTS_PREFIX})
 set(SERVER_DIR ${CMAKE_SOURCE_DIR}/${SERVER_PREFIX})
 set(VIEWER_DIR ${CMAKE_SOURCE_DIR}/${VIEWER_PREFIX})
-set(LL_TESTS ON CACHE BOOL "Build and run unit and integration tests (disable for build timing runs to reduce variation)")
+set(LL_TESTS OFF CACHE BOOL "Build and run unit and integration tests (disable for build timing runs to reduce variation)")
 set(VISTA_ICON OFF CACHE BOOL "Allow vista icon with pre 2008 Visual Studio IDEs. (Assumes replacement old rcdll.dll with new rcdll.dll from win sdk 7.0 or later)")
 
 set(LIBS_PREBUILT_DIR ${CMAKE_SOURCE_DIR}/../libraries CACHE PATH
@@ -124,11 +124,11 @@ set(GRID agni CACHE STRING "Target Grid")
 set(VIEWER ON CACHE BOOL "Build Second Life viewer.")
 set(VIEWER_CHANNEL "Singularity" CACHE STRING "Viewer Channel Name")
 set(VIEWER_LOGIN_CHANNEL ${VIEWER_CHANNEL} CACHE STRING "Fake login channel for A/B Testing")
-set(VIEWER_BRANDING_ID "singularity" CACHE STRING "Viewer branding id (currently secondlife|snowglobe)")
+set(VIEWER_BRANDING_ID "impostor" CACHE STRING "Viewer branding id (currently secondlife|snowglobe)")
 
 # *TODO: break out proper Branding-secondlife.cmake, Branding-snowglobe.cmake, etc
-set(VIEWER_BRANDING_NAME "Singularity")
-set(VIEWER_BRANDING_NAME_CAMELCASE "Singularity")
+set(VIEWER_BRANDING_NAME "Impostor")
+set(VIEWER_BRANDING_NAME_CAMELCASE "Impostor")
 
 set(STANDALONE OFF CACHE BOOL "Do not use Linden-supplied prebuilt libraries.")
 

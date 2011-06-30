@@ -14,6 +14,7 @@
 		<column name="position" label="Pos." width="60" tool_tip="Position (X, Y) within this sim, or general direction (cardinal point) for outside sims"/>
 		<column name="altitude" label="Alt." width="48" tool_tip="Altitude"/>
 		<column name="client" label="Client" width="80" dynamicwidth="true" tool_tip="Client the avatar is possibly using"/>
+		<column name="metadata" label="Metadata" width="80" dynamicwidth="true" tool_tip="Extra info we know about the avatar"/>
 	</scroll_list>
 
 	<tab_container border="false" bottom_delta="-130" height="120" left="6" mouse_opaque="false"
@@ -55,6 +56,17 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
+      <button
+			       name="follow_btn"
+			       label="Follow AV"
+			       tool_tip="Follows Selected Avatar"
+			       left_delta="90"
+			       bottom_delta="0"
+			       width="80"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
 			<!-- upper middle row -->
 			<button
 			       name="im_btn"
@@ -88,7 +100,18 @@
 			       height="20"
 			       font="SansSerifSmall"
 			       follows="bottom|left"
-			       />			
+			       />
+      <button
+			       name="debug_btn"
+			       label="AV Textures"
+			       tool_tip="Opens the selected avatar's"
+			       left_delta="90"
+			       bottom_delta="0"
+			       width="80"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
 			<!-- lower middle row-->
 			<button
 			       name="mark_btn"
@@ -123,11 +146,22 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
+      <button
+			       name="anims_btn"
+			       label="AV Anims"
+			       tool_tip="Rip the selected avatars animations"
+			       left_delta="90"
+			       bottom_delta="0"
+			       width="80"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
 			<!-- lower row-->
 			<button
 			       name="focus_btn"
-			       label="Focus"
-			       tool_tip="Focus camera on this avatar in the list"
+			       label="Zoom in"
+			       tool_tip="Zooms in camera on this avatar in the list"
 			       left="10"
 			       bottom_delta="-22"
 			       width="80"
@@ -157,7 +191,17 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-
+      <button
+               name="export_dude_btn"
+               label="AV Export"
+               tool_tip="Export the selected avatar in list"
+               left_delta="90"
+               bottom_delta="0"
+               width="80"
+               height="20"
+               font="SansSerifSmall"
+               follows="bottom|left"
+			       />
 		</panel>
 
 		<panel border="true" bottom_delta="-150" follows="left|top|right|bottom" height="255"

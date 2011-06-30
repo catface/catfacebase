@@ -73,15 +73,15 @@ class PlatformSetup(object):
     for t in ('Debug', 'Release', 'ReleaseSSE2', 'RelWithDebInfo'):
         build_types[t.lower()] = t
 
-    build_type = build_types['relwithdebinfo']
+    build_type = build_types['releasesse2']
     standalone = 'OFF'
     unattended = 'OFF'
     universal = 'OFF'
-    project_name = 'Singularity'
+    project_name = 'Impostor'
     distcc = True
     cmake_opts = []
     word_size = 32
-    opensim_rules = 'OFF' #whether or not to use rules fit for opensim
+    opensim_rules = 'ON' #whether or not to use rules fit for opensim
     using_express = False
 
     def __init__(self):
@@ -505,14 +505,14 @@ class WindowsSetup(PlatformSetup):
 
     def _get_generator(self):
         if self._generator is None:
-            for version in 'vc80 vc90 vc100 vc71'.split():
+            for version in 'vc100 vc90 vc80 vc71'.split():
                 if self.find_visual_studio(version):
                     self._generator = version
                     print 'Building with ', self.gens[version]['gen']
                     break
             else:
                 print >> sys.stderr, 'Cannot find a Visual Studio installation, testing for express editions'
-                for version in 'vc80 vc90 vc100 vc71'.split():
+                for version in 'vc100 vc90 vc80 vc71'.split():
                     if self.find_visual_studio_express(version):
                         self._generator = version
                         self.using_express = True
@@ -662,9 +662,9 @@ class WindowsSetup(PlatformSetup):
                 continue
             vstool_cmd = (os.path.join('tools','vstool','VSTool.exe') +
                           ' --solution ' +
-                          os.path.join(build_dir,'Singularity.sln') +
+                          os.path.join(build_dir,'Impostor.sln') +
                           ' --config ' + self.build_type +
-                          ' --startup secondlife-bin')
+                          ' --startup Impostor')
             print 'Running %r in %r' % (vstool_cmd, getcwd())
             self.run(vstool_cmd)        
             print >> open(stamp, 'w'), self.build_type
@@ -691,7 +691,7 @@ class WindowsSetup(PlatformSetup):
 class CygwinSetup(WindowsSetup):
     def __init__(self):
         super(CygwinSetup, self).__init__()
-        self.generator = 'vc80'
+        self.generator = 'vc100'
 
     def cmake_commandline(self, src_dir, build_dir, opts, simple):
         dos_dir = commands.getoutput("cygpath -w %s" % src_dir)

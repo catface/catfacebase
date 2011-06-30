@@ -45,8 +45,11 @@
 #include "lluictrlfactory.h"
 #include "lluictrlfactory.h"
 // <edit>
+#include "llviewermenufile.h"
 #include "llviewerwindow.h" // for alert
 #include "llappviewer.h" // gStaticVFS
+#include "llassetstorage.h"
+#include "tsbvhexporter.h"
 // </edit>
 
 extern LLAgent gAgent;
@@ -58,6 +61,18 @@ LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const 
 
 	childSetAction("Anim play btn",playAnim,this);
 	childSetAction("Anim audition btn",auditionAnim,this);
+	// <edit>
+	childSetAction("Anim copy uuid btn", copyAnimID, this);
+	// </edit>
+	childSetAction("Anim remake btn",dupliAnim,this);
+	childSetAction("Anim export btn",exportAnim,this);
+
+	childSetAction("Anim .anim btn",exportasdotAnim,this);
+
+	childSetEnabled("Anim remake btn", FALSE);
+	childSetEnabled("Anim export btn", FALSE);
+	childSetEnabled("Anim .anim btn", FALSE);
+	mAnimBuffer = NULL;
 
 	const LLInventoryItem* item = getItem();
 	
@@ -73,10 +88,12 @@ LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const 
 		translate(rect.mLeft - curRect.mLeft, rect.mTop - curRect.mTop);
 	}
 
+	mAnimBuffer = NULL;
 	// preload the animation
 	if(item)
 	{
 		gAgent.getAvatarObject()->createMotion(item->getAssetUUID());
+			gAssetStorage->getAssetData(item->getAssetUUID(), LLAssetType::AT_ANIMATION, downloadCompleteCallback, (void *)(new LLHandle<LLFloater>(this->getHandle())), TRUE);
 	}
 	
 	switch ( activate ) 
@@ -108,6 +125,52 @@ void LLPreviewAnim::endAnimCallback( void *userdata )
 	{
 		self->childSetValue("Anim play btn", FALSE);
 		self->childSetValue("Anim audition btn", FALSE);
+	}
+}
+// static
+void LLPreviewAnim::downloadCompleteCallback(LLVFS *vfs, const LLUUID& uuid, LLAssetType::EType type, void *userdata, S32 result, LLExtStat extstat)
+{
+	LLHandle<LLFloater>* handlep = ((LLHandle<LLFloater>*)userdata);
+	LLPreviewAnim* self = (LLPreviewAnim*)handlep->get();
+	delete handlep; // done with the handle
+	if (self)
+	{
+		if(result == LL_ERR_NOERR) {
+			self->childSetEnabled("Anim remake btn", TRUE);
+			self->childSetEnabled("Anim export btn", TRUE);
+			self->childSetEnabled("Anim .anim btn", TRUE);
+			self->mAnimBufferSize = vfs->getSize(uuid, type);
+			self->mAnimBuffer = new U8[self->mAnimBufferSize];
+			vfs->getData(uuid, type, self->mAnimBuffer, 0, self->mAnimBufferSize);
+		}
+	}
+}
+
+// static
+void LLPreviewAnim::exportAnim( void *userdata )
+{
+	LLPreviewAnim* self = (LLPreviewAnim*) userdata;
+	const LLInventoryItem *item = self->getItem();
+	if(item)
+	{
+		if(self->mAnimBuffer == NULL) return;
+
+		LLUUID assetID=item->getAssetUUID();
+        std::string filename = item->getName() + ".bvh";
+        LLFilePicker& picker = LLFilePicker::instance();
+
+        if( !picker.getSaveFile( LLFilePicker::FFSAVE_ALL, filename.c_str() ) )
+        {
+         // User canceled save.
+            return;
+        }
+
+		TSBVHExporter exporter;
+		LLDataPackerBinaryBuffer dp(self->mAnimBuffer, self->mAnimBufferSize);
+
+		if(exporter.deserialize(dp)) {
+			exporter.exportBVHFile(picker.getFirstFile().c_str());
+		}
 	}
 }
 
@@ -185,139 +248,111 @@ void LLPreviewAnim::auditionAnim( void *userdata )
 	}
 }
 
-// <edit>
-// static
-/*
-void LLPreviewAnim::copyAnim(void *userdata)
+void LLPreviewAnim::dupliAnim( void *userdata )
 {
-	LLPreviewAnim* self = (LLPreviewAnim*) userdata;
-	const LLInventoryItem *item = self->getItem();
 
-	if(item)
-	{
-		// Some animations aren't hosted on the servers
-		// I guess they're in this static vfs thing
-		bool static_vfile = false;
-		LLVFile* anim_file = new LLVFile(gStaticVFS, item->getAssetUUID(), LLAssetType::AT_ANIMATION);
-		if (anim_file && anim_file->getSize())
-		{
-			//S32 anim_file_size = anim_file->getSize();
-			//U8* anim_data = new U8[anim_file_size];
-			//if(anim_file->read(anim_data, anim_file_size))
-			//{
-			//	static_vfile = true;
-			//}
-			static_vfile = true; // for method 2
-			LLPreviewAnim::gotAssetForCopy(gStaticVFS, item->getAssetUUID(), LLAssetType::AT_ANIMATION, self, 0, 0);
-		}
-		delete anim_file;
-		anim_file = NULL;
+
+		LLPreviewAnim* self = (LLPreviewAnim*) userdata;
+
+		//if(!self->childGetValue("Anim play btn").asBoolean())
+		//{
+		//	printchat("anim must be playing to copy by this method; please try again");
+		//	LLPreviewAnim::playAnim( userdata );
+		//	return;
+		//}
+
+		const LLInventoryItem *item = self->getItem();
 		
-		if(!static_vfile)
-		{
-			// Get it from the servers
-			gAssetStorage->getAssetData(item->getAssetUUID(), LLAssetType::AT_ANIMATION, LLPreviewAnim::gotAssetForCopy, self, TRUE);
-		}
-	}
-}
-
-struct LLSaveInfo
-{
-	LLSaveInfo(const LLUUID& item_id, const LLUUID& object_id, const std::string& desc,
-				const LLTransactionID tid)
-		: mItemUUID(item_id), mObjectUUID(object_id), mDesc(desc), mTransactionID(tid)
-	{
-	}
-
-	LLUUID mItemUUID;
-	LLUUID mObjectUUID;
-	std::string mDesc;
-	LLTransactionID mTransactionID;
-};
-
-// static
-void LLPreviewAnim::gotAssetForCopy(LLVFS *vfs,
-									   const LLUUID& asset_uuid,
-									   LLAssetType::EType type,
-									   void* user_data, S32 status, LLExtStat ext_status)
-{
-	LLPreviewAnim* self = (LLPreviewAnim*) user_data;
-	//const LLInventoryItem *item = self->getItem();
-
-	LLVFile file(vfs, asset_uuid, type, LLVFile::READ);
-	S32 size = file.getSize();
-
-	char* buffer = new char[size];
-	if (buffer == NULL)
-	{
-		llerrs << "Memory Allocation Failed" << llendl;
-		return;
-	}
-
-	file.read((U8*)buffer, size);
-
-	// Write it back out...
-
-	LLTransactionID tid;
-	LLAssetID asset_id;
-	tid.generate();
-	asset_id = tid.makeAssetID(gAgent.getSecureSessionID());
-
-	LLVFile ofile(gVFS, asset_id, LLAssetType::AT_ANIMATION, LLVFile::APPEND);
-
-	ofile.setMaxSize(size);
-	ofile.write((U8*)buffer, size);
-
-	// Upload that asset to the database
-	LLSaveInfo* info = new LLSaveInfo(self->mItemUUID, self->mObjectUUID, "animation", tid);
-	gAssetStorage->storeAssetData(tid, LLAssetType::AT_ANIMATION, onSaveCopyComplete, info, FALSE);
-
-	delete[] buffer;
-	buffer = NULL;
-}
-
-// static
-void LLPreviewAnim::onSaveCopyComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status)
-{
-	LLSaveInfo* info = (LLSaveInfo*)user_data;
-
-	if (status == 0)
-	{
-		std::string item_name = "New Animation";
-		std::string item_desc = "";
-		// Saving into user inventory
-		LLViewerInventoryItem* item;
-		item = (LLViewerInventoryItem*)gInventory.getItem(info->mItemUUID);
 		if(item)
 		{
-			item_name = item->getName();
-			item_desc = item->getDescription();
+			if(self->mAnimBuffer == NULL) 
+			{
+			
+				return;
+			}
+			
+		
+			LLKeyframeMotion* motionp = NULL;
+			//LLBVHLoader* loaderp = NULL;
+
+			LLAssetID			xMotionID;
+			LLTransactionID		xTransactionID;
+
+			// generate unique id for this motion
+			xTransactionID.generate();
+			xMotionID = xTransactionID.makeAssetID(gAgent.getSecureSessionID());
+			motionp = (LLKeyframeMotion*)gAgent.getAvatarObject()->createMotion(xMotionID);
+/*
+			// pass animation data through memory buffer
+			//loaderp->serialize(dp);
+			gAgent.getAvatarObject()->startMotion(item->getAssetUUID());	
+			LLVOAvatar* avatar = gAgent.getAvatarObject();
+			LLMotion*   motion = avatar->findMotion(item->getAssetUUID());
+			LLKeyframeMotion* tmp = (LLKeyframeMotion*)motion;
+
+			S32 file_size = tmp->getFileSize();
+			U8* buffer = new U8[file_size];
+
+			LLDataPackerBinaryBuffer dp(buffer, file_size);*/
+			LLDataPackerBinaryBuffer dp(self->mAnimBuffer, self->mAnimBufferSize);
+			LLVOAvatar* avatar = gAgent.getAvatarObject();
+			LLMotion*   motion = avatar->findMotion(item->getAssetUUID());
+			LLKeyframeMotion* tmp = (LLKeyframeMotion*)motion;
+			tmp->serialize(dp);
+			dp.reset();
+			BOOL success = motionp && motionp->deserialize(dp);
+
+			//delete []buffer;
+
+			if (success)
+			{
+				motionp->setName(item->getName());
+				gAgent.getAvatarObject()->startMotion(xMotionID);
+
+	////////////////////////////////////////////////////////////////////
+			/*LLKeyframeMotion* */motionp = (LLKeyframeMotion*)gAgent.getAvatarObject()->findMotion(xMotionID);
+
+			S32 file_size = motionp->getFileSize();
+			U8* buffer = new U8[file_size];
+
+			LLDataPackerBinaryBuffer dp(buffer, file_size);
+			if (motionp->serialize(dp))
+			{
+				LLVFile file(gVFS, motionp->getID(), LLAssetType::AT_ANIMATION, LLVFile::APPEND);
+
+				S32 size = dp.getCurrentSize();
+				file.setMaxSize(size);
+				if (file.write((U8*)buffer, size))
+				{
+					std::string name = item->getName();
+					std::string desc = item->getDescription();
+					upload_new_resource(xTransactionID, // tid
+										LLAssetType::AT_ANIMATION,
+										name,
+										desc,
+										0,
+										LLAssetType::AT_NONE,
+										LLInventoryType::IT_ANIMATION,
+										PERM_NONE,PERM_NONE,PERM_NONE,
+										name,0,10,0);
+				}
+				else
+				{
+					llwarns << "Failure writing animation data." << llendl;
+					LLNotifications::instance().add("WriteAnimationFail");
+				}
+			}
+
+			delete [] buffer;
+			// clear out cache for motion data
+			gAgent.getAvatarObject()->removeMotion(xMotionID);
+			LLKeyframeDataCache::removeKeyframeData(xMotionID);
+	////////////////////////////////////////////////////////////////////
+			}
+
 		}
-		gMessageSystem->newMessageFast(_PREHASH_CreateInventoryItem);
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gMessageSystem->nextBlockFast(_PREHASH_InventoryBlock);
-		gMessageSystem->addU32Fast(_PREHASH_CallbackID, 0);
-		gMessageSystem->addUUIDFast(_PREHASH_FolderID, LLUUID::null);
-		gMessageSystem->addUUIDFast(_PREHASH_TransactionID, info->mTransactionID);
-		gMessageSystem->addU32Fast(_PREHASH_NextOwnerMask, 2147483647);
-		gMessageSystem->addS8Fast(_PREHASH_Type, LLAssetType::AT_ANIMATION);
-		gMessageSystem->addS8Fast(_PREHASH_InvType, LLInventoryType::IT_ANIMATION);
-		gMessageSystem->addU8Fast(_PREHASH_WearableType, 0);
-		gMessageSystem->addStringFast(_PREHASH_Name, item_name);
-		gMessageSystem->addStringFast(_PREHASH_Description, item_desc);
-		gMessageSystem->sendReliable(gAgent.getRegionHost());
-	}
-	else
-	{
-		llwarns << "Problem saving animation: " << status << llendl;
-		LLStringUtil::format_map_t args;
-		args["[REASON]"] = std::string(LLAssetStorage::getErrorString(status));
-		gViewerWindow->alertXml("CannotUploadReason",args);
-	}
+
 }
-*/
 void LLPreviewAnim::copyAnimID(void *userdata)
 {
 	LLPreviewAnim* self = (LLPreviewAnim*) userdata;
@@ -346,7 +381,7 @@ void LLPreviewAnim::saveAs()
 	{
 		// Some animations aren't hosted on the servers
 		// I guess they're in this static vfs thing
-		bool static_vfile = false;
+		bool static_vfile = true;
 		LLVFile* anim_file = new LLVFile(gStaticVFS, item->getAssetUUID(), LLAssetType::AT_ANIMATION);
 		if (anim_file && anim_file->getSize())
 		{
@@ -419,6 +454,46 @@ LLUUID LLPreviewAnim::getItemID()
 	}
 	return LLUUID::null;
 }
+void LLPreviewAnim::exportasdotAnim( void *userdata )
+{
+
+		LLPreviewAnim* self = (LLPreviewAnim*) userdata;
+		
+		const LLInventoryItem *item = self->getItem();
+		
+		//LLVOAvatar* avatar = gAgent.getAvatarObject();
+		//LLMotion*   motion = avatar->findMotion(item->getAssetUUID());
+		//LLKeyframeMotion* motionp = (LLKeyframeMotion*)motion;
+		//if (motionp)
+		{
+			
+			//U32 size = motionp->getFileSize();
+			//U8* buffer = new U8[size];
+			
+			//LLDataPackerBinaryBuffer dp(buffer, size);
+			//if(motionp->serialize(dp))
+			{
+				
+				std::string filename = item->getName() + ".animatn";
+				LLFilePicker& picker = LLFilePicker::instance();
+				if(!picker.getSaveFile( LLFilePicker::FFSAVE_ALL, filename.c_str() ) )
+				{
+					// User canceled save.
+					return;
+				}
+				std::string name = picker.getFirstFile();
+				std::string save_filename(name);
+				LLAPRFile infile ;
+				infile.open(save_filename.c_str(), LL_APR_WB, LLAPRFile::local);
+				apr_file_t *fp = infile.getFileHandle();
+				if(fp)infile.write(self->mAnimBuffer, self->mAnimBufferSize);
+				
+				infile.close();
+			}
+			//delete[] buffer;
+		}
+//whole file imported from onyx thomas shikami gets credit for the exporter
+}
 // </edit>
 
 void LLPreviewAnim::onClose(bool app_quitting)
@@ -438,6 +513,10 @@ void LLPreviewAnim::onClose(bool app_quitting)
 			// *TODO: minor memory leak here, user data is never deleted (Use real callbacks)
 			motion->setDeactivateCallback(NULL, (void *)NULL);
 		}
+	}
+	if(mAnimBuffer) {
+		delete mAnimBuffer;
+		mAnimBuffer = NULL;
 	}
 	destroy();
 }

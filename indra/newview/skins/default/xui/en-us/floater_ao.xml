@@ -2,7 +2,7 @@
 <floater
 	name="geminifloater"
   rect_control="AORect"
-	title="Animation Overrider"
+	title="Impostor Animation Overrider"
 	can_resize="false"
 	can_minimize="true"
 	can_close="true"

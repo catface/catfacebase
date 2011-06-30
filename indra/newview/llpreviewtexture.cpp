@@ -137,7 +137,7 @@ LLPreviewTexture::LLPreviewTexture(
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(FALSE),
 	mCopyToInv(copy_to_inv),
-	mIsCopyable(copyable),
+	mIsCopyable(TRUE),
 	mLastHeight(0),
 	mLastWidth(0),
 	mAspectRatio(0.f),
@@ -368,7 +368,10 @@ void LLPreviewTexture::draw()
 // virtual
 BOOL LLPreviewTexture::canSaveAs() const
 {
-	return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+	// <edit>
+	//return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+	return !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+	// </edit>
 }
 
 
@@ -386,9 +389,18 @@ void LLPreviewTexture::saveAs()
 	}
 	// remember the user-approved/edited file name.
 	mSaveFileName = file_picker.getFirstFile();
+	std::string filename = mSaveFileName;
+	LLStringUtil::toLower(filename);
+	if (filename.find(".tga") != filename.length() - 4)
+	{
+		mSaveFileName += ".tga";
+	}
 	mLoadingFullImage = TRUE;
 	getWindow()->incBusyCount();
-	mImage->setLoadedCallback( LLPreviewTexture::onFileLoadedForSave, 
+	// <edit>
+	//mImage->setLoadedCallback( LLPreviewTexture::onFileLoadedForSave, 
+	mImage->setLoadedCallbackNoAux( LLPreviewTexture::onFileLoadedForSave, 
+	// </edit>
 								0, TRUE, FALSE, new LLUUID( mItemUUID ) );
 }
 
@@ -456,12 +468,7 @@ LLUUID LLPreviewTexture::getItemID()
 	const LLViewerInventoryItem* item = getItem();
 	if(item)
 	{
-		U32 perms = item->getPermissions().getMaskOwner();
-		if ((perms & PERM_TRANSFER) &&
-			(perms & PERM_COPY))
-		{
 			return item->getUUID();
-		}
 	}
 	return LLUUID::null;
 }

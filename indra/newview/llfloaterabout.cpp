@@ -109,7 +109,7 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// Support for changing product name.
 	std::string title("About ");
-	title += LLAppViewer::instance()->getSecondLifeTitle();
+	title += "Impostor";
 	setTitle(title);
 
 	LLViewerTextEditor *support_widget = 
@@ -138,9 +138,9 @@ LLFloaterAbout::LLFloaterAbout()
 	// Version string
 	std::string version = std::string(LLAppViewer::instance()->getSecondLifeTitle()
 		+ llformat(" %d.%d.%d (%d) %s %s (%s)\n",
-		LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VIEWER_BUILD,
+		 gSavedSettings.getU32("SpecifiedVersionMaj"), gSavedSettings.getU32("SpecifiedVersionMin"), gSavedSettings.getU32("SpecifiedVersionPatch"), gSavedSettings.getU32("SpecifiedVersionBuild"),
 		__DATE__, __TIME__,
-		LL_CHANNEL));
+		gSavedSettings.getString("SpecifiedChannel").c_str()));
 	support_widget->appendColoredText(version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
 	support_widget->appendStyledText(LLTrans::getString("ReleaseNotes"), false, false, viewer_link_style);
 
@@ -327,15 +327,16 @@ void LLFloaterAbout::show(void*)
 static std::string get_viewer_release_notes_url()
 {
 	return "http://www.singularityviewer.org";
-	/*std::ostringstream version;
-	version <<  LL_VERSION_MAJOR
-		<< "." << LL_VERSION_MINOR
-		<< "." << LL_VERSION_PATCH
-		<< "." << LL_VERSION_BUILD;
+	std::ostringstream version;
+	//version <<  LL_VERSION_MAJOR
+	version << gSavedSettings.getU32("SpecifiedVersionMaj") << "." //LL_VERSION_MAJOR
+		<< gSavedSettings.getU32("SpecifiedVersionMin") << "." //LL_VERSION_MINOR
+		<< gSavedSettings.getU32("SpecifiedVersionPatch") << "." //LL_VERSION_PATCH
+		<< gSavedSettings.getU32("SpecifiedVersionBuild"); //LL_VERSION_BUILD
 	LLSD query;
 
-	query["channel"] = LL_CHANNEL;
-
+	//query["channel"] = LL_CHANNEL;
+	query["channel"] = gSavedSettings.getString("SpecifiedChannel");
 	query["version"] = version.str();
 
 	std::ostringstream url;

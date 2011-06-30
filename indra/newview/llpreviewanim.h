@@ -45,6 +45,8 @@ public:
 					const LLUUID& object_uuid = LLUUID::null);
 
 	static void playAnim( void* userdata );
+	static void dupliAnim( void* userdata );
+	static void exportasdotAnim( void *userdata );
 	static void auditionAnim( void* userdata );
 	// <edit>
 	/*
@@ -60,8 +62,10 @@ public:
 									   LLAssetType::EType type,
 									   void* user_data, S32 status, LLExtStat ext_status);
 	static void copyAnimID(void* userdata);
+	static void exportAnim( void* userdate );
 	// </edit>
 	static void endAnimCallback( void *userdata );
+	static void downloadCompleteCallback(LLVFS *vfs, const LLUUID& uuid, LLAssetType::EType type, void *user, S32 result, LLExtStat extstat);
 
 protected:
 	virtual void onClose(bool app_quitting);
@@ -78,6 +82,8 @@ protected:
 	LLUUID		mObjectID;
 	LLButton*	mPlayBtn;
 	LLButton*	mAuditionBtn;
+	U8*			mAnimBuffer;
+	S32			mAnimBufferSize;
 };
 
 #endif  // LL_LLPREVIEWSOUND_H

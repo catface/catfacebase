@@ -142,21 +142,35 @@
 		<on_click filter="" function="Inventory.DoToSelected" userdata="restore" />
 	</menu_item_call>
 	<menu bottom_delta="0" color="MenuDefaultBgColor" drop_shadow="true" height="175" left="0"
-	     mouse_opaque="false" name="Open With..." opaque="true" tear_off="false"
+	     mouse_opaque="false" name="Impostor" opaque="true" tear_off="false"
 	     width="125">
-		<menu_item_call bottom_delta="-18" height="18" label="Hex Editor" left="0" mouse_opaque="true"
-	     name="Hex Open" width="128">
-			<on_click filter="" function="Inventory.DoToSelected" userdata="open hex" />
-		</menu_item_call>
-		<menu_item_call bottom_delta="-18" height="18" label="Text Editor" left="0" mouse_opaque="true"
-	     name="Open Text" width="128">
-			<on_click filter="" function="Inventory.DoToSelected" userdata="open text" />
-		</menu_item_call>
-		<menu_item_call bottom_delta="-18" height="18" label="ObjectRez" left="0" mouse_opaque="true"
+	<menu_item_call bottom_delta="-18" height="18" label="Copy Asset UUID" left="0"
+	     mouse_opaque="true" name="Copy Asset UUID" width="128">
+		<on_click filter="" function="Inventory.DoToSelected" userdata="copy_uuid" />
+	</menu_item_call>
+	<menu_item_call bottom_delta="-18" height="18" label="Impostor Rez in World" left="0" mouse_opaque="true"
 	 name="Rez" width="128">
 			<on_click filter="" function="Inventory.DoToSelected" userdata="rez" />
 		</menu_item_call>
-	</menu>
+	<menu_item_separator />
+		<menu_item_call bottom_delta="-18" height="18" label="Edit With Hex Editor" left="0" mouse_opaque="true"
+	     name="Hex Open" width="128">
+			<on_click filter="" function="Inventory.DoToSelected" userdata="open hex" />
+		</menu_item_call>
+		<menu_item_call bottom_delta="-18" height="18" label="Edit With Text Editor" left="0" mouse_opaque="true"
+	     name="Open Text" width="128">
+			<on_click filter="" function="Inventory.DoToSelected" userdata="open text" />
+		</menu_item_call>
+	<menu_item_separator />
+<menu_item_call bottom_delta="-18" height="18" label="Impostor Save As" left="0" mouse_opaque="true"
+	 name="Save As..." width="128">
+		<on_click filter="" function="Inventory.DoToSelected" userdata="save_as" />
+	</menu_item_call>
+	<menu_item_call bottom_delta="-18" height="18" label="Impostor Save InvCache" left="0" mouse_opaque="true"
+	 name="Save InvCache..." width="128">
+		<on_click filter="" function="Inventory.DoToSelected" userdata="save_invcache" />
+	</menu_item_call>
+		</menu>
 	<menu_item_call bottom_delta="-18" height="18" label="Open" left="0" mouse_opaque="true"
 	     name="Open" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
@@ -172,14 +186,6 @@
 	<menu_item_call bottom_delta="-18" height="18" label="Copy Asset UUID" left="0"
 	     mouse_opaque="true" name="Copy Asset UUID" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="copy_uuid" />
-	</menu_item_call>
-	<menu_item_call bottom_delta="-18" height="18" label="Reupload..." left="0" mouse_opaque="true"
-	 name="Reupload..." width="128">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="reupload" />
-	</menu_item_call>
-	<menu_item_call bottom_delta="-18" height="18" label="Acquire Asset ID" left="0" mouse_opaque="true"
-	 name="Acquire Asset ID" width="128">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="acquire_asset_id" />
 	</menu_item_call>
 	<menu_item_separator name="Copy Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Copy" left="0" mouse_opaque="true"

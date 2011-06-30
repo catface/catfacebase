@@ -56,8 +56,8 @@ class LLExportable
 	};
 
 public:
-	LLExportable(LLViewerObject* object, std::string name, std::map<U32,std::string>& primNameMap);
-	LLExportable(LLVOAvatar* avatar, EWearableType type, std::map<U32,std::string>& primNameMap);
+	LLExportable(LLViewerObject* object, std::string name, std::map<U32,std::pair<std::string, std::string> >& primNameMap);
+	LLExportable(LLVOAvatar* avatar, EWearableType type, std::map<U32,std::pair<std::string, std::string> >& primNameMap);
 
 	LLSD asLLSD();
 
@@ -65,7 +65,7 @@ public:
 	EWearableType mWearableType;
 	LLViewerObject* mObject;
 	LLVOAvatar* mAvatar;
-	std::map<U32,std::string>* mPrimNameMap;
+	std::map<U32,std::pair<std::string, std::string> >* mPrimNameMap;
 };
 
 
@@ -77,12 +77,12 @@ public:
 	BOOL postBuild(void);
 	void addAvatarStuff(LLVOAvatar* avatarp);
 	void updateNamesProgress();
-	void receivePrimName(LLViewerObject* object, std::string name);
+	void receivePrimName(LLViewerObject* object, std::string name, std::string desc);
 
 	LLSD getLLSD();
 
 	std::vector<U32> mPrimList;
-	std::map<U32, std::string> mPrimNameMap;
+	std::map<U32, std::pair<std::string, std::string> > mPrimNameMap;
 
 	static std::vector<LLFloaterExport*> instances; // for callback-type use
 

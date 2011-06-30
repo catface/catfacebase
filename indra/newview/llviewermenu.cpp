@@ -64,6 +64,7 @@
 #include "lllocalinventory.h"
 #include "llfloaterimport.h"
 #include "llfloaterexport.h"
+#include "llfloaterinterceptor.h"
 #include "llfloaterexploreanimations.h"
 #include "llfloaterexploresounds.h"
 #include "llfloaterblacklist.h"
@@ -246,6 +247,8 @@
 #include "llfloatermessagelog.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
+#include "llfloaterattachments.h"
+#include "llfloaterkeytool.h"
 // </edit>
 
 #include "scriptcounter.h"
@@ -427,6 +430,7 @@ void handle_leave_god_mode(void*);
 // <edit>
 void handle_fake_away_status(void*);
 void handle_area_search(void*);
+void handle_interceptor(void*);
 
 // <dogmode> for pose stand
 LLUUID current_pose = LLUUID::null;
@@ -444,6 +448,34 @@ void set_current_pose(std::string anim)
 void handle_pose_stand(void*)
 {
 	set_current_pose("038fcec9-5ebd-8a8e-0e2e-6e71a0a1ac53");
+}
+void handle_undeform_avatar(void*)
+{
+	set_current_pose("44e98907-3764-119f-1c13-cba9945d2ff4");
+}
+void handle_pose_stand_ltao(void*)
+{
+	set_current_pose("6c082c7b-f70e-9da0-0451-54793f869ff4");
+}
+void handle_pose_stand_ltah(void*)
+{
+	set_current_pose("45e59c14-913b-c58c-2a55-c0a5c1eeef53");
+}
+void handle_pose_stand_ltad(void*)
+{
+	set_current_pose("421d6bb4-94a9-3c42-4593-f2bc1f6a26e6");
+}
+void handle_pose_stand_loau(void*)
+{
+	set_current_pose("8b3bb239-d610-1c0f-4d1a-69d29bc17e2c");
+}
+void handle_pose_stand_loao(void*)
+{
+	set_current_pose("4d70e328-48b6-dc6a-0be1-85dd6b333e81");
+}
+void handle_pose_stand_lhao(void*)
+{
+	set_current_pose("f088eaf0-f1c9-8cf1-99c8-09df96bb13ae");
 }
 void handle_pose_stand_stop(void*)
 {
@@ -470,6 +502,9 @@ BOOL handle_check_pose(void* userdata) {
 
 void handle_force_ground_sit(void*);
 void handle_phantom_avatar(void*);
+bool check_phantom_avatar(void*);
+void handle_rainbow_tag(void*);
+bool check_rainbow_tag(void*);
 void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
@@ -479,6 +514,7 @@ void handle_local_assets(void*);
 void handle_vfs_explorer(void*);
 void handle_sounds_explorer(void*);
 void handle_blacklist(void*);
+void handle_keytool_from_clipboard(void*);
 // </edit>
 
 BOOL is_inventory_visible( void* user_data );
@@ -792,17 +828,31 @@ void init_menus()
 	// TomY TODO convert these two
 	LLMenuGL*menu;
 
-	menu = new LLMenuGL("Singularity");
+	menu = new LLMenuGL("Impostor");
+	menu->append(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
 	menu->append(new LLMenuItemCallGL(	"Close All Dialogs", 
 										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
-	menu->appendSeparator();
-	menu->append(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
-	menu->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
 	menu->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
+	menu->append(new LLMenuItemCallGL(  "Undeform Avatar", &handle_undeform_avatar, NULL));
+	menu->append(new LLMenuItemCallGL(  "Rainbow Tag", &handle_rainbow_tag, NULL,&check_rainbow_tag,NULL));
+	menu->append(new LLMenuItemCallGL(	"Interceptor",  
+										&handle_interceptor,  NULL, NULL, 'I', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
+	menu->append(new LLMenuItemCheckGL("Double-Click Teleport", 
+	menu_toggle_control, NULL, menu_check_control, 
+		(void*)"DoubleClickTeleport"));
+	menu->append(new LLMenuItemCheckGL("Double-Click Auto-Pilot", 
+	menu_toggle_control, NULL, menu_check_control, 
+		(void*)"DoubleClickAutoPilot"));
+			LLMenuItemCheckGL* item;
+	item = new LLMenuItemCheckGL("Show Look At", menu_toggle_control, NULL, menu_check_control, (void*)"AscentShowLookAt");
+	menu->append(item);
+
+	//menu->append(new LLMenuItemToggleGL("Show Look At", &LLHUDEffectLookAt::sDebugLookAt));
 	menu->appendSeparator();
-	menu->append(new LLMenuItemCallGL( "Animation Override...",
+	menu->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
+	menu->append(new LLMenuItemCallGL( "Animation Overrider",
 									&handle_edit_ao, NULL));
-	menu->append(new LLMenuItemCheckGL( "Nimble",
+	menu->append(new LLMenuItemCheckGL( "Make Nimble",
 										&menu_toggle_control,
 										NULL,
 										&menu_check_control,
@@ -812,20 +862,9 @@ void init_menus()
 										NULL,
 										&menu_check_control,
 										(void*)"ReSit"));
-	menu->appendSeparator();
-	menu->append(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
-	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));	
-
-	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
-											&handle_sounds_explorer, NULL));
-	menu->append(new LLMenuItemCallGL(	"Asset Blacklist",
-											&handle_blacklist, NULL));
-	
-	
-	
-	// <dogmode>
+		// <dogmode>
 	// Add in the pose stand -------------------------------------------
-	/*LLMenuGL* sub = new LLMenuGL("Pose Stand...");
+	LLMenuGL* sub = new LLMenuGL("Pose Stand...");
 	menu->appendMenu(sub);
 
 	sub->append(new LLMenuItemCallGL(  "Legs Together Arms Out", &handle_pose_stand_ltao, NULL));
@@ -836,9 +875,32 @@ void init_menus()
 	sub->append(new LLMenuItemCallGL(  "Legs Half Arms Out", &handle_pose_stand_lhao, NULL));
 	sub->append(new LLMenuItemCallGL(  "Stop Pose Stand", &handle_pose_stand_stop, NULL));
 	// </dogmode> ------------------------------------------------------*/
-	
-	menu->append(new LLMenuItemCheckGL("Pose Stand",&handle_toggle_pose, NULL, &handle_check_pose, NULL));
-
+	menu->appendSeparator();
+	menu->append(new LLMenuItemCallGL(  "Clipboard Keytool",
+		&handle_keytool_from_clipboard, NULL, NULL, 'K', MASK_CONTROL | MASK_SHIFT));
+	menu->append(new LLMenuItemCallGL(	"Local Assets...",
+												&handle_local_assets, NULL));
+	menu->appendSeparator();
+	menu->append(new LLMenuItemCallGL(	"VFS Explorer",
+												&handle_vfs_explorer, NULL));
+	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
+											&handle_sounds_explorer, NULL));
+	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
+	menu->append(new LLMenuItemCallGL(	"Reopen with Hex Editor", 
+											&handle_reopen_with_hex_editor, NULL));
+	menu->appendSeparator();
+	menu->append(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));	
+	menu->append(new LLMenuItemCallGL(	"Asset Blacklist",
+											&handle_blacklist, NULL));
+	menu->appendSeparator();
+	menu->append(new LLMenuItemCheckGL("Local Godmode",
+										   &handle_toggle_hacked_godmode,
+										   NULL,
+										   &check_toggle_hacked_godmode,
+										   (void*)"HackedGodmode"));
+	menu->append(new LLMenuItemCallGL("Advanced Menu",
+										   &toggle_debug_menus, NULL));
+										  
 	//these should always be last in a sub menu
 	menu->createJumpKeys();
 	gMenuBarView->appendMenu( menu );
@@ -1018,7 +1080,9 @@ void init_client_menu(LLMenuGL* menu)
 
 // <dogmode> 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-	if (!LLViewerLogin::getInstance()->isInProductionGrid())
+	// <edit>
+	//if (!LLViewerLogin::getInstance()->isInProductionGrid())
+	// </edit>
 	{
 		menu->append(new LLMenuItemCheckGL("Hacked Godmode",
 										   &handle_toggle_hacked_godmode,
@@ -1478,7 +1542,13 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	sub_menu->append(new LLMenuItemCheckGL("Sculpt",	&LLPipeline::toggleRenderDebug, NULL,
 													&LLPipeline::toggleRenderDebugControl,
 													(void*)LLPipeline::RENDER_DEBUG_SCULPTED));
-		
+	sub_menu->append(new LLMenuItemCheckGL("Build Queue",	&LLPipeline::toggleRenderDebug, NULL,
+													&LLPipeline::toggleRenderDebugControl,
+													(void*)LLPipeline::RENDER_DEBUG_BUILD_QUEUE));
+	sub_menu->append(new LLMenuItemCheckGL("Update Types",	&LLPipeline::toggleRenderDebug, NULL,
+													&LLPipeline::toggleRenderDebugControl,
+													(void*)LLPipeline::RENDER_DEBUG_UPDATE_TYPE));
+
 	sub_menu->append(new LLMenuItemCallGL("Vectorize Perf Test", &run_vectorize_perf_test));
 
 	sub_menu = new LLMenuGL("Render Tests");
@@ -1600,7 +1670,11 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 	menu->append(new LLMenuItemCallGL("Reload Vertex Shader", &reload_vertex_shader, NULL));
 	menu->append(new LLMenuItemToggleGL("Animation Info", &LLVOAvatar::sShowAnimationDebug));
 	menu->append(new LLMenuItemCallGL("Slow Motion Animations", &slow_mo_animations, NULL));
-	menu->append(new LLMenuItemToggleGL("Show Look At", &LLHUDEffectLookAt::sDebugLookAt));
+
+	LLMenuItemCheckGL* item;
+	item = new LLMenuItemCheckGL("Show Look At", menu_toggle_control, NULL, menu_check_control, (void*)"AscentShowLookAt");
+	menu->append(item);
+
 	menu->append(new LLMenuItemToggleGL("Show Point At", &LLHUDEffectPointAt::sDebugPointAt));
 	menu->append(new LLMenuItemToggleGL("Debug Joint Updates", &LLVOAvatar::sJointDebug));
 	menu->append(new LLMenuItemToggleGL("Disable LOD", &LLViewerJoint::sDisableLOD));
@@ -2227,7 +2301,7 @@ gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
 
 class LLObjectInspect : public view_listener_t
 {
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 	{
 		LLFloaterInspect::show();
 		return true;
@@ -2267,6 +2341,102 @@ class LLObjectDerender : public view_listener_t
 		return true;
 	}
 };
+//<PARTICLE>
+class LLObjectParticle : public view_listener_t
+{
+    bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+    {
+        for (LLObjectSelection::valid_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_begin();
+             iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
+        {
+            LLSelectNode* node = *iter;
+            if(node->getObject()->isParticleSource())
+            {
+                LLPartSysData thisPartSysData = node->getObject()->mPartSourcep->mPartSysData;
+
+                std::ostringstream script_stream;
+                std::string flags_st="( 0 ";
+                std::string pattern_st="";
+
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_INTERP_COLOR_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_INTERP_COLOR_MASK");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_INTERP_SCALE_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_INTERP_SCALE_MASK");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_BOUNCE_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_BOUNCE_MASK");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_WIND_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_WIND_MASK\n");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_FOLLOW_SRC_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_FOLLOW_SRC_MASK");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_FOLLOW_VELOCITY_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_FOLLOW_VELOCITY_MASK");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_TARGET_POS_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_TARGET_POS_MASK");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_TARGET_LINEAR_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_TARGET_LINEAR_MASK");
+                if (thisPartSysData.mPartData.mFlags & LLPartData::LL_PART_EMISSIVE_MASK)
+                    flags_st.append("\n\t\t\t\t|PSYS_PART_EMISSIVE_MASK");
+
+                switch (thisPartSysData.mPattern)
+                {
+                    case 0x01:    pattern_st=" PSYS_SRC_PATTERN_DROP ";        break;
+                    case 0x02:    pattern_st=" PSYS_SRC_PATTERN_EXPLODE ";    break;
+                    case 0x04:    pattern_st=" PSYS_SRC_PATTERN_ANGLE ";        break;
+                    case 0x08:    pattern_st=" PSYS_SRC_PATTERN_ANGLE_CONE ";    break;
+                    case 0x10:    pattern_st=" PSYS_SRC_PATTERN_ANGLE_CONE_EMPTY ";    break;// ty erscal
+                    default:    pattern_st="0";                    break;
+                }
+
+                script_stream << "default\n";
+                script_stream << "{\n";
+                script_stream << "\tstate_entry()\n";
+                script_stream << "\t{\n";
+                script_stream << "\t\tllParticleSystem([\n";
+                script_stream << "\t\t\tPSYS_PART_FLAGS," << flags_st << " ), \n";
+                script_stream << "\t\t\tPSYS_SRC_PATTERN," << pattern_st  << ",\n";
+                script_stream << "\t\t\tPSYS_PART_START_ALPHA," << thisPartSysData.mPartData.mStartColor.mV[3] << ",\n";
+                script_stream << "\t\t\tPSYS_PART_END_ALPHA," << thisPartSysData.mPartData.mEndColor.mV[3] << ",\n";
+                script_stream << "\t\t\tPSYS_PART_START_COLOR,<"<<thisPartSysData.mPartData.mStartColor.mV[0] << ",";
+                script_stream << thisPartSysData.mPartData.mStartColor.mV[1] << ",";
+                script_stream << thisPartSysData.mPartData.mStartColor.mV[2] << "> ,\n";
+                script_stream << "\t\t\tPSYS_PART_END_COLOR,<"<<thisPartSysData.mPartData.mEndColor.mV[0] << ",";
+                script_stream << thisPartSysData.mPartData.mEndColor.mV[1] << ",";
+                script_stream << thisPartSysData.mPartData.mEndColor.mV[2] << "> ,\n";
+                script_stream << "\t\t\tPSYS_PART_START_SCALE,<" << thisPartSysData.mPartData.mStartScale.mV[0] << ",";
+                script_stream << thisPartSysData.mPartData.mStartScale.mV[1] << ",0>,\n";
+                script_stream << "\t\t\tPSYS_PART_END_SCALE,<" << thisPartSysData.mPartData.mEndScale.mV[0] << ",";
+                script_stream << thisPartSysData.mPartData.mEndScale.mV[1] << ",0>,\n";
+                script_stream << "\t\t\tPSYS_PART_MAX_AGE," << thisPartSysData.mPartData.mMaxAge << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_MAX_AGE," <<  thisPartSysData.mMaxAge << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_ACCEL,<"<<  thisPartSysData.mPartAccel.mV[0] << ",";
+                script_stream << thisPartSysData.mPartAccel.mV[1] << ",";
+                script_stream << thisPartSysData.mPartAccel.mV[2] << ">,\n";
+                script_stream << "\t\t\tPSYS_SRC_BURST_PART_COUNT," << (U32) thisPartSysData.mBurstPartCount << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_BURST_RADIUS," << thisPartSysData.mBurstRadius << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_BURST_RATE," << thisPartSysData.mBurstRate << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_BURST_SPEED_MIN," << thisPartSysData.mBurstSpeedMin << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_BURST_SPEED_MAX," << thisPartSysData.mBurstSpeedMax << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_ANGLE_BEGIN," << thisPartSysData.mInnerAngle << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_ANGLE_END," << thisPartSysData.mOuterAngle << ",\n";
+                script_stream << "\t\t\tPSYS_SRC_OMEGA,<" << thisPartSysData.mAngularVelocity.mV[0]<< ",";
+                script_stream << thisPartSysData.mAngularVelocity.mV[1] << ",";
+                script_stream << thisPartSysData.mAngularVelocity.mV[2] << ">,\n";
+                script_stream << "\t\t\tPSYS_SRC_TEXTURE, (key)\"" << node->getObject()->mPartSourcep->getImage()->getID()<< "\",\n";
+                script_stream << "\t\t\tPSYS_SRC_TARGET_KEY, (key)\"" << thisPartSysData.mTargetUUID << "\"\n";
+                script_stream << " \t\t]);\n";
+                script_stream << "\t}\n";
+                script_stream << "}\n";
+
+                LLChat chat("\nRipped particle script has been copied to your clipboard, you can now paste it in a new script\n");
+                LLFloaterChat::addChat(chat);
+
+                gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(script_stream.str()));
+            }
+        }
+        return true;
+    }
+};
+//</PARTICLE> 
 
 
 //---------------------------------------------------------------------------
@@ -2557,6 +2727,27 @@ class LLObjectCopyUUID : public view_listener_t
 	}
 };
 
+class LLObjectEnableSaveAs : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		bool new_value = (object != NULL);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};
+
+class LLObjectSaveAs : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterExport* floater = new LLFloaterExport();
+		floater->center();
+		return true;
+	}
+};
+
 class LLObjectEnableImport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -2693,7 +2884,7 @@ class LLPowerfulWizard : public view_listener_t
 			{
 				LLChat chat;
 				chat.mSourceType = CHAT_SOURCE_SYSTEM;
-				chat.mText = llformat("Can't do that, dave.");
+				chat.mText = llformat("Impostor Says You Can't do that.");
 				LLFloaterChat::addChat(chat);
 				return false;
 			}
@@ -2701,7 +2892,7 @@ class LLPowerfulWizard : public view_listener_t
 			// Let the user know they are a rippling madman what is capable of everything
 			LLChat chat;
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
-			chat.mText = llformat("~*zort*~");
+			chat.mText = llformat("~*Lolwut?*~");
 
 			LLFloaterChat::addChat(chat);
 			/*
@@ -2731,7 +2922,7 @@ class LLKillEmAll : public view_listener_t
 			{
 				LLChat chat;
 				chat.mSourceType = CHAT_SOURCE_SYSTEM;
-				chat.mText = llformat("Can't do that, dave.");
+				chat.mText = llformat("Impostor Says You Can't do that.");
 				LLFloaterChat::addChat(chat);
 				return false;
 			}
@@ -2739,7 +2930,7 @@ class LLKillEmAll : public view_listener_t
 			// Let the user know they are a rippling madman what is capable of everything
 			LLChat chat;
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
-			chat.mText = llformat("Irrevocably destroying object. Hope you didn't need that.");
+			chat.mText = llformat("Impostor is Irrevocably destroying object(S). Hope you didn't need that!");
 
 			LLFloaterChat::addChat(chat);
 			/*
@@ -3055,6 +3246,29 @@ class LLAvatarDebug : public view_listener_t
 	}
 };
 
+//<edit>
+class LLAvatarEnableAttachmentList : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		bool new_value = (object != NULL);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};
+
+class LLAvatarAttachmentList : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFloaterAttachments* floater = new LLFloaterAttachments();
+		floater->center();
+		return true;
+	}
+};
+//</edit>
+
 bool callback_eject(const LLSD& notification, const LLSD& response)
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
@@ -3183,10 +3397,15 @@ class LLAvatarCopyUUID : public view_listener_t
 		if(!avatar) return true;
 		
 		LLUUID uuid = avatar->getID();
+		LLChat chat;
+		chat.mText = "uuid: "+uuid.asString();
 		char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
 		uuid.toString(buffer);
 		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
-		return true;
+		
+		chat.mSourceType = CHAT_SOURCE_SYSTEM;
+        LLFloaterChat::addChat(chat);
+		return true; 
 	}
 };
 
@@ -3198,9 +3417,11 @@ class LLAvatarClientUUID : public view_listener_t
 		if(!avatar) return true;
 		
 		std::string clientID;
+		//LLChat chat;
 		LLColor4 color;
 		avatar->getClientInfo(clientID, color, false);
 		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(clientID));
+        LLFloaterChat::addChat(clientID);
 		return true;
 	}
 };
@@ -3664,9 +3885,31 @@ void process_grant_godlike_powers(LLMessageSystem* msg, void**)
 
 // <edit>
 
+void handle_keytool_from_clipboard(void*)
+	{
+		std::string clipstr = utf8str_trim(wstring_to_utf8str(gClipboard.getPasteWString()));
+		LLUUID key = LLUUID(clipstr);
+		if(key.notNull())
+			 {
+				 LLFloaterKeyTool::show(key);
+				 }
+		}
+
 void handle_reopen_with_hex_editor(void*)
 {
-
+	LLFloater* top = gFloaterView->getFrontmost();
+	if (top)
+	{
+		LLUUID item_id = top->getItemID();
+		if(item_id.notNull())
+		{
+			LLInventoryItem* item = gInventory.getItem(item_id);
+			if(item)
+			{
+				DOFloaterHex::show(item_id);
+			}
+		}
+	}
 }
 
 void handle_open_message_log(void*)
@@ -3681,12 +3924,18 @@ void handle_edit_ao(void*)
 
 void handle_local_assets(void*)
 {
-
+	LLFloaterVFS::show();
 }
 
 void handle_vfs_explorer(void*)
 {
+	LLFloaterVFSExplorer::show();
+}
 
+void handle_interceptor(void*)
+{
+	if(LLFloaterInterceptor::sInstance) LLFloaterInterceptor::sInstance->close(false);
+	else LLFloaterInterceptor::show();
 }
 
 void handle_sounds_explorer(void*)
@@ -3770,7 +4019,10 @@ void handle_force_ground_sit(void*)
 		}
 	}
 }
-
+bool check_phantom_avatar(void*)
+{
+	return LLAgent::getPhantom();
+}
 void handle_phantom_avatar(void*)
 {
 	BOOL ph = LLAgent::getPhantom();
@@ -3787,7 +4039,94 @@ void handle_phantom_avatar(void*)
 	chat.mText = llformat("%s%s","Phantom ",(ph ? "On" : "Off"));
 	LLFloaterChat::addChat(chat);
 }
+class RainbowTagTimer : public LLEventTimer
+{
+public:
+	RainbowTagTimer(F32 interval):
+	  LLEventTimer(interval),
+	  running(TRUE)
+	  {
+		  gSavedSettings.getControl("RainbowTagInterval")->getSignal()->connect(boost::bind(&RainbowTagTimer::update,this,_1));
+		  itr = LLVOAvatar::sClientResolutionList.beginMap();
+	  }
+	~RainbowTagTimer()
+	{
+	}
+	void setPeriod(F32 period)
+	{
+		mPeriod = period;
+	}
+	static void update(RainbowTagTimer* timer, const LLSD& newvalue)
+	{
+		F32 rainbow_tag_interval = newvalue.asFloat();
+		if(timer)
+		{
+			timer->setPeriod(rainbow_tag_interval);
+		}
+	}
+	BOOL tick()
+	{
+		if(running)
+		{
+			if(itr == LLVOAvatar::sClientResolutionList.endMap())
+			{
+				itr = LLVOAvatar::sClientResolutionList.beginMap();
+			}
+			std::string uuid = (*itr).first;
+			LLSD value = (*itr).second;
+			if(value.has("name"))
+			{
+				std::string name = value.get("name");
+				LLColor4 color = LLColor4(value.get("color"));
+				if(value["multiple"].asReal() != 0)
+				{
+					color *= 1.0/(value["multiple"].asReal()+1.0f);
+				}
+				gAgent.getAvatarObject()->mClientTag = name;
+				gAgent.getAvatarObject()->mClientColor = color;
+				gAgent.sendAgentSetAppearance(uuid);
+			}
+			itr++;
+		}
+		else
+		{
+			gAgent.sendAgentSetAppearance();
+		}
+		return !running;
+	}
+	void stop()
+	{
+		running = FALSE;
+	}
+	LLSD::map_iterator itr;
+	BOOL running;
+};
+RainbowTagTimer* rainbow_timer = NULL;
+bool check_rainbow_tag(void*)
+{
+	return !(rainbow_timer == NULL);
+}
+void handle_rainbow_tag(void*)
+{
+	static const LLCachedControl<F32> rainbow_tag_interval("RainbowTagInterval", 0.3f);
+	BOOL rt = check_rainbow_tag(NULL);
 
+	if (rt)
+	{
+		rainbow_timer->stop();
+		rainbow_timer = NULL;
+	}
+	else
+	{
+		rainbow_timer = new RainbowTagTimer(rainbow_tag_interval);
+	}
+	//flip
+	rt = !rt;
+	LLChat chat;
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	chat.mText = llformat("%s%s","Rainbow Tag is ",(rt ? "On" : "Off"));
+	LLFloaterChat::addChat(chat);
+}
 // </edit>
 
 /*
@@ -5376,16 +5715,16 @@ class LLToolsLink : public view_listener_t
 			return true;
 		}
 
-		S32 object_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
-		if (object_count > MAX_CHILDREN_PER_TASK + 1)
-		{
-			LLSD args;
-			args["COUNT"] = llformat("%d", object_count);
-			int max = MAX_CHILDREN_PER_TASK+1;
-			args["MAX"] = llformat("%d", max);
-			LLNotifications::instance().add("UnableToLinkObjects", args);
-			return true;
-		}
+//		S32 object_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
+//		if (object_count > MAX_CHILDREN_PER_TASK + 1)
+//		{
+//			LLSD args;
+//			args["COUNT"] = llformat("%d", object_count);
+//			int max = MAX_CHILDREN_PER_TASK+1;
+//			args["MAX"] = llformat("%d", max);
+//	    	LLNotifications::instance().add("UnableToLinkObjects", args);
+//			return true;
+//		}
 
 		if(LLSelectMgr::getInstance()->getSelection()->getRootObjectCount() < 2)
 		{
@@ -7674,6 +8013,11 @@ void handle_selected_texture_info(void*)
 		map_t::iterator it;
 		for (it = faces_per_texture.begin(); it != faces_per_texture.end(); ++it)
 		{
+			LLUUID image_id = it->first;
+			// <edit>
+			std::string uuid_str;
+			image_id.toString(uuid_str);
+			// </edit>
 			U8 te = it->second[0];
 			LLViewerImage* img = node->getObject()->getTEImage(te);
 			S32 height = img->getHeight();
@@ -7681,7 +8025,9 @@ void handle_selected_texture_info(void*)
 			S32 components = img->getComponents();
 			// <edit>
 			//msg = llformat("%dx%d %s on face ",
-			msg = llformat("%dx%d %s on face ",
+			msg = llformat("%s, %dx%d %s on face ",
+								uuid_str.c_str(),
+			// </edit>
 								width,
 								height,
 								(components == 4 ? "alpha" : "opaque"));
@@ -7692,12 +8038,40 @@ void handle_selected_texture_info(void*)
 			LLChat chat(msg);
 			LLFloaterChat::addChat(chat);
 		}
+
+		// <edit>
+		if(node->getObject()->isSculpted())
+		{
+			LLSculptParams *sculpt_params = (LLSculptParams *)(node->getObject()->getParameterEntry(LLNetworkData::PARAMS_SCULPT));
+			LLUUID sculpt_id = sculpt_params->getSculptTexture();
+			std::string uuid_str;
+			sculpt_id.toString(uuid_str);
+			msg.assign("Sculpt texture: ");
+			msg.append(uuid_str.c_str());
+			LLChat chat(msg);
+			LLFloaterChat::addChat(chat);
+
+			unique_textures[sculpt_id] = true;
+		}
+
+		if(node->getObject()->isParticleSource())
+		{
+			//LLUUID particle_id = node->getObject()->mPartSourcep->getImage()->getID();
+		}
+		// </edit>
+	}
+	// <edit>
+	typedef std::map<LLUUID, bool>::iterator map_iter;
+	for(map_iter i = unique_textures.begin(); i != unique_textures.end(); ++i)
+	{
+		LLUUID asset_id = (*i).first;
+		LLLocalInventory::addItem(asset_id.asString(), (int)LLAssetType::AT_TEXTURE, asset_id, true);
 	}
 
 	// Show total widthxheight
-	F32 memory = (F32)total_memory;
-	memory = memory / 1000000;
-	std::string msg = llformat("Total uncompressed: %f MB", memory);
+	F32 memoriez = (F32)total_memory;
+	memoriez = memoriez / 1000000;
+	std::string msg = llformat("Total uncompressed: %f MB", memoriez);
 	LLChat chat(msg);
 	LLFloaterChat::addChat(chat);
 	// </edit>
@@ -9150,415 +9524,11 @@ class LLWorldDayCycle : public view_listener_t
 	}
 };
 
-
-
 static void addMenu(view_listener_t *menu, const std::string& name)
 {
 	sMenus.push_back(menu);
 	menu->registerListener(gMenuHolder, name);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //Chalice - Old beacon style
@@ -9704,550 +9674,6 @@ class LLViewCheckBeaconEnabled : public view_listener_t
 	}
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void initialize_menus()
 {
 	// A parameterized event handler used as ctrl-8/9/0 zoom controls below.
@@ -10343,21 +9769,6 @@ void initialize_menus()
 	addMenu(new LLViewCheckHUDAttachments(), "View.CheckHUDAttachments");
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// World menu
 	addMenu(new LLWorldChat(), "World.Chat");
 	addMenu(new LLWorldAlwaysRun(), "World.AlwaysRun");
@@ -10439,7 +9850,7 @@ void initialize_menus()
 	addMenu(new LLSelfEnableRemoveAllAttachments(), "Self.EnableRemoveAllAttachments");
 
 	 // Avatar pie menu
-
+    addMenu(new LLObjectParticle(), "Object.Particle");
 
 	addMenu(new LLObjectMute(), "Avatar.Mute");
 	addMenu(new LLAvatarAddFriend(), "Avatar.AddFriend");
@@ -10450,6 +9861,7 @@ void initialize_menus()
 	addMenu(new LLAvatarEnableDebug(), "Avatar.EnableDebug");
 	addMenu(new LLAvatarInviteToGroup(), "Avatar.InviteToGroup");
 	addMenu(new LLAvatarGiveCard(), "Avatar.GiveCard");
+	addMenu(new LLAvatarAttachmentList(), "Avatar.AttachmentList");
 	addMenu(new LLAvatarEject(), "Avatar.Eject");
 	addMenu(new LLAvatarSendIM(), "Avatar.SendIM");
 	addMenu(new LLAvatarReportAbuse(), "Avatar.ReportAbuse");
@@ -10471,6 +9883,7 @@ void initialize_menus()
 	addMenu(new LLObjectReportAbuse(), "Object.ReportAbuse");
 	addMenu(new LLObjectReportAbuse(), "Object.ReportAbuse");
 	// <edit>
+	addMenu(new LLObjectSaveAs(), "Object.SaveAs");
 	addMenu(new LLObjectImport(), "Object.Import");
 	addMenu(new LLObjectMeasure(), "Object.Measure");
 	addMenu(new LLObjectData(), "Object.Data");
@@ -10495,11 +9908,13 @@ void initialize_menus()
 	addMenu(new LLObjectEnableWear(), "Object.EnableWear");
 	addMenu(new LLObjectEnableReturn(), "Object.EnableReturn");
 	addMenu(new LLObjectEnableReportAbuse(), "Object.EnableReportAbuse");
-	// <edit>
-	addMenu(new LLObjectEnableImport(), "Object.EnableImport");
-	// </edit>
 	addMenu(new LLObjectEnableMute(), "Object.EnableMute");
 	addMenu(new LLObjectEnableBuy(), "Object.EnableBuy");
+	// <edit>
+	addMenu(new LLObjectEnableSaveAs(), "Object.EnableSaveAs");
+	addMenu(new LLObjectEnableImport(), "Object.EnableImport");
+	addMenu(new LLObjectEnableSaveAs(), "Avatar.EnableAttachmentList");
+	// </edit>
 
 	/*addMenu(new LLObjectVisibleTouch(), "Object.VisibleTouch");
 	addMenu(new LLObjectVisibleCustomTouch(), "Object.VisibleCustomTouch");

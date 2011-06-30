@@ -68,6 +68,7 @@
 #include "llworld.h"
 #include "llui.h"
 #include "llweb.h"
+#include "lllocalinventory.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -163,6 +164,25 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 	LLViewerObject *object = mPick.getObject();
 	LLViewerObject *parent = NULL;
 
+	// Shift Right Click Open Texture
+	if(mPick.mKeyMask == MASK_SHIFT)
+	{
+		if(object)
+		{
+			U8 face = mPick.mObjectFace & 0xff;
+			if(face < object->getNumTEs())
+			{
+				LLViewerImage* img = object->getTEImage(face);
+				if(img)
+				{
+					LLUUID image_id = img->getID();
+					LLLocalInventory::addItem(image_id.asString(), (int)LLAssetType::AT_TEXTURE, image_id, true);
+				}
+			}
+		}
+		return TRUE;
+	}
+	// Shift Right Click Open Texture
 	if (mPick.mPickType != LLPickInfo::PICK_LAND)
 	{
 		LLViewerParcelMgr::getInstance()->deselectLand();

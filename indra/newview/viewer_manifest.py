@@ -135,7 +135,7 @@ class ViewerManifest(LLManifest):
     def installer_prefix(self):
         mapping={"secondlife":'SecondLife_',
                  "snowglobe":'Snowglobe_',
-                 "singularity":'Singularity_'}
+                 "impostor":'Impostor_'}
         return mapping[self.viewer_branding_id()]
 
     def flags_list(self):
@@ -171,7 +171,7 @@ class ViewerManifest(LLManifest):
 
 class WindowsManifest(ViewerManifest):
     def final_exe(self):
-        return 'Singularity.exe'
+        return 'Impostor.exe'
 
 
     def construct(self):
@@ -185,26 +185,26 @@ class WindowsManifest(ViewerManifest):
                                'llplugin', 'slplugin', self.args['configuration'], "SLPlugin.exe"),
                   "SLPlugin.exe")
         
-      	# need to get the kdu dll from any of the build directories as well
-        #~ try:
-            #~ self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
-                #~ '../../libraries/i686-win32/lib/release/llkdu.dll'), 
-                  #~ dst='llkdu.dll')
-            #~ pass
-        #~ except:
-            #~ print "Skipping llkdu.dll"
-            #~ pass
+      	need to get the kdu dll from any of the build directories as well
+        try:
+            self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
+                '../../libraries/i686-win32/lib/release/llkdu.dll'), 
+                  dst='llkdu.dll')
+            pass
+        except:
+            print "Skipping llkdu.dll"
+            pass
         self.path(src="licenses-win32.txt", dst="licenses.txt")
 
         self.path("featuretable.txt")
+
 
         # For use in crash reporting (generates minidumps)
         self.path("dbghelp.dll")
 
         # For using FMOD for sound... DJS
-        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-          self.path("fmod.dll")
-          self.end_prefix()
+        # For using FMOD for sound... DJS
+            self.path("../../fmodapi375win/api/fmod.dll", "fmod.dll");
 
         # For textures
         #if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
@@ -375,17 +375,17 @@ class WindowsManifest(ViewerManifest):
         !define VERSION_LONG "%(version)s"
         !define VERSION_DASHES "%(version_dashes)s"
         """ % substitution_strings
-        installer_file = "Singularity_%(version_short)s_Setup.exe"
+        installer_file = "Impostor_%(version_short)s_Setup.exe"
         grid_vars_template = """
         OutFile "%(installer_file)s"
-        !define VIEWERNAME "Singularity Viewer"
+        !define VIEWERNAME "Impostor Viewer"
         !define INSTFLAGS "%(flags)s"
-        !define INSTNAME   "SingularityViewer"
-        !define SHORTCUT   "Singularity Viewer"
+        !define INSTNAME   "ImpostorViewer"
+        !define SHORTCUT   "Impostor Viewer"
         !define URLNAME   "secondlife"
-        !define INSTALL_ICON "install_icon_singularity.ico"
-        !define UNINSTALL_ICON "install_icon_singularity.ico"
-        Caption "Singularity Viewer ${VERSION}"
+        !define INSTALL_ICON "install_icon_impostor.ico"
+        !define UNINSTALL_ICON "install_icon_impostor.ico"
+        Caption "Impostor Viewer ${VERSION}"
         """
         if 'installer_name' in self.args:
             installer_file = self.args['installer_name']
@@ -547,10 +547,10 @@ class DarwinManifest(ViewerManifest):
                                  { 'viewer_binary' : self.dst_path_of('Contents/MacOS/'+self.app_name())})
 
     def app_name(self):
-        return "Singularity"
+        return "Impostor"
         
     def info_plist_name(self):
-        return "Info-Singularity.plist"
+        return "Info-Impostor.plist"
 
     def package_finish(self):
         channel_standin = self.app_name()
@@ -686,13 +686,13 @@ class LinuxManifest(ViewerManifest):
         self.path("featuretable_linux.txt")
 
     def wrapper_name(self):
-        return 'singularity'
+        return 'impostor'
 
     def binary_name(self):
-        return 'singularity-do-not-run-directly'
+        return 'impostor-do-not-run-directly'
     
     def icon_name(self):
-        return "singularity_icon.png"
+        return "impostor_icon.png"
 
     def package_finish(self):
         if 'installer_name' in self.args:
@@ -748,17 +748,17 @@ class Linux_i686Manifest(LinuxManifest):
     def construct(self):
         super(Linux_i686Manifest, self).construct()
 
-        # install either the libllkdu we just built, or a prebuilt one, in
-        # decreasing order of preference.  for linux package, this goes to bin/
-        #~ try:
-            #~ self.path(self.find_existing_file('../llkdu/libllkdu.so',
-                #~ '../../libraries/i686-linux/lib_release_client/libllkdu.so'), 
-                  #~ dst='bin/libllkdu.so')
-            #~ # keep this one to preserve syntax, open source mangling removes previous lines
-            #~ pass
-        #~ except:
-            #~ print "Skipping libllkdu.so - not found"
-            #~ pass
+        install either the libllkdu we just built, or a prebuilt one, in
+        decreasing order of preference.  for linux package, this goes to bin/
+        try:
+            self.path(self.find_existing_file('../llkdu/libllkdu.so',
+                '../../libraries/i686-linux/lib_release_client/libllkdu.so'), 
+                  dst='bin/libllkdu.so')
+            # keep this one to preserve syntax, open source mangling removes previous lines
+            pass
+        except:
+            print "Skipping libllkdu.so - not found"
+            pass
 
         if self.prefix("../../libraries/i686-linux/lib_release_client", dst="lib"):
 

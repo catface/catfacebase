@@ -102,6 +102,8 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+#include "llfloaterattachments.h"
+
 //#define DEBUG_UPDATE_TYPE
 
 BOOL gVelocityInterpolate = TRUE;
@@ -2507,14 +2509,18 @@ void LLViewerObject::processTaskInv(LLMessageSystem* msg, void** user_data)
 	LLUUID task_id;
 	msg->getUUIDFast(_PREHASH_InventoryData, _PREHASH_TaskID, task_id);
 	LLViewerObject* object = gObjectList.findObject(task_id);
-	if(!object)
+
+	llinfos << LLFloaterAttachments::sInventoryRequests.size() << " : " << LLFloaterAttachments::sInventoryRequests.count(task_id) << llendl;
+
+	if(!object &&
+	   (LLFloaterAttachments::sInventoryRequests.size() == 0 || LLFloaterAttachments::sInventoryRequests.count(task_id) == 0))
 	{
 		llwarns << "LLViewerObject::processTaskInv object "
 			<< task_id << " does not exist." << llendl;
 		return;
 	}
 
-	msg->getS16Fast(_PREHASH_InventoryData, _PREHASH_Serial, object->mInventorySerialNum);
+	msg->getS16Fast(_PREHASH_InventoryData, _PREHASH_Serial, object ? object->mInventorySerialNum : LLFloaterAttachments::sInventoryRequests[task_id]);
 	LLFilenameAndTask* ft = new LLFilenameAndTask;
 	ft->mTaskID = task_id;
 
@@ -2524,28 +2530,33 @@ void LLViewerObject::processTaskInv(LLMessageSystem* msg, void** user_data)
 	
 	if(ft->mFilename.empty())
 	{
-		lldebugs << "Task has no inventory" << llendl;
-		// mock up some inventory to make a drop target.
-		if(object->mInventory)
+		if(object)
 		{
-			object->mInventory->clear(); // will deref and delete it
+			lldebugs << "Task has no inventory" << llendl;
+			// mock up some inventory to make a drop target.
+			if(object->mInventory)
+			{
+				object->mInventory->clear(); // will deref and delete it
+			}
+			else
+			{
+				object->mInventory = new InventoryObjectList();
+			}
+			LLPointer<LLInventoryObject> obj;
+			obj = new LLInventoryObject(object->mID, LLUUID::null,
+										LLAssetType::AT_CATEGORY,
+										std::string("Contents"));
+			object->mInventory->push_front(obj);
+			object->doInventoryCallback();
 		}
-		else
-		{
-			object->mInventory = new InventoryObjectList();
-		}
-		LLPointer<LLInventoryObject> obj;
-		obj = new LLInventoryObject(object->mID, LLUUID::null,
-									LLAssetType::AT_CATEGORY,
-									std::string("Contents"));
-		object->mInventory->push_front(obj);
-		object->doInventoryCallback();
+
 		delete ft;
 		return;
 	}
-	gXferManager->requestFile(gDirUtilp->getExpandedFilename(LL_PATH_CACHE, ft->mFilename), 
+
+	gXferManager->requestFile(gDirUtilp->getExpandedFilename(LL_PATH_CACHE, ft->mFilename),
 								ft->mFilename, LL_PATH_CACHE,
-								object->mRegionp->getHost(),
+								object ? object->mRegionp->getHost() : gAgent.getRegionHost(),
 								TRUE,
 								&LLViewerObject::processTaskInvFile,
 								(void**)ft,
@@ -2560,6 +2571,12 @@ void LLViewerObject::processTaskInvFile(void** user_data, S32 error_code, LLExtS
 	   (object = gObjectList.findObject(ft->mTaskID)))
 	{
 		object->loadTaskInvFile(ft->mFilename);
+	}
+	else if(ft && (0 == error_code) &&
+			(LLFloaterAttachments::sInventoryRequests.size() != 0 || LLFloaterAttachments::sInventoryRequests.count(ft->mTaskID) != 0))
+	{
+		LLFloaterAttachments::sInventoryRequests.erase(ft->mTaskID);
+		LLFloaterAttachments::dumpTaskInvFile(ft->mTaskID.asString(), ft->mFilename);
 	}
 	else
 	{
@@ -5318,4 +5335,3 @@ const LLUUID &LLViewerObject::extractAttachmentItemID()
 	setAttachmentItemID(item_id);
 	return getAttachmentItemID();
 }
-

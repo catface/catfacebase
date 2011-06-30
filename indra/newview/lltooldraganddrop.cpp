@@ -1167,11 +1167,13 @@ void LLToolDragAndDrop::dropTextureAllFaces(LLViewerObject* hit_obj,
 		return;
 	}
 	LLUUID asset_id = item->getAssetUUID();
-	BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
+	// <edit>
+	/*BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
 	if(!success)
 	{
 		return;
-	}
+	}*/
+	// </edit>
 	LLViewerImage* image = gImageList.getImage(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
 	S32 num_faces = hit_obj->getNumTEs();
@@ -1209,11 +1211,13 @@ void LLToolDragAndDrop::dropTextureOneFace(LLViewerObject* hit_obj,
 		return;
 	}
 	LLUUID asset_id = item->getAssetUUID();
-	BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
+	// <edit>
+	/*BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
 	if(!success)
 	{
 		return;
-	}
+	}*/
+	// </edit>
 	// update viewer side image in anticipation of update from simulator
 	LLViewerImage* image = gImageList.getImage(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
@@ -2086,7 +2090,9 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 	{
 		return ACCEPT_NO_LOCKED;
 	}
-	return ACCEPT_NO;
+	// <edit> allow dropping textures onto objects
+ 	//return ACCEPT_NO;
+ 	return ACCEPT_YES_SINGLE;
 }
 
 
@@ -2481,6 +2487,9 @@ EAcceptance LLToolDragAndDrop::dad3dTextureObject(
 		}
 		return rv;
 	}
+	// <edit>
+	/*
+	// </edit>
 	if(!obj->permModify())
 	{
 		return ACCEPT_NO_LOCKED;
@@ -2490,6 +2499,9 @@ EAcceptance LLToolDragAndDrop::dad3dTextureObject(
 	{
 		return ACCEPT_NO;
 	}
+	// <edit>
+	*/
+	// </edit>
 
 	if(drop && (ACCEPT_YES_SINGLE <= rv))
 	{
@@ -2858,7 +2870,9 @@ EAcceptance LLToolDragAndDrop::dad3dGiveInventoryObject(
 	if(avatar && avatar->isWearingAttachment( item->getUUID() ) )
 	{
 		// You can't give objects that are attached to you
-		return ACCEPT_NO;
+		// <edit>
+		//return ACCEPT_NO;
+		// </edit>
 	}
 	if( obj && avatar )
 	{
@@ -2924,11 +2938,13 @@ EAcceptance LLToolDragAndDrop::dad3dRezFromObjectOnLand(
 	locateInventory(item, cat);
 	if(!item || !item->isComplete()) return ACCEPT_NO;
 
-	if(!gAgent.allowOperation(PERM_COPY, item->getPermissions())
-		|| !item->getPermissions().allowTransferTo(LLUUID::null))
-	{
-		return ACCEPT_NO_LOCKED;
-	}
+	// <edit>
+	//if(!gAgent.allowOperation(PERM_COPY, item->getPermissions())
+	//	|| !item->getPermissions().allowTransferTo(LLUUID::null))
+	//{
+	//	return ACCEPT_NO_LOCKED;
+	//}
+	// </edit>
 	if(drop)
 	{
 		dropObject(obj, TRUE, TRUE, FALSE);
@@ -2958,12 +2974,14 @@ EAcceptance LLToolDragAndDrop::dad3dRezFromObjectOnObject(
 		//}
 		//return rv;
 	}
-	if(!item->getPermissions().allowCopyBy(gAgent.getID(),
-										   gAgent.getGroupID())
-	   || !item->getPermissions().allowTransferTo(LLUUID::null))
-	{
-		return ACCEPT_NO_LOCKED;
-	}
+	// <edit>
+	//if(!item->getPermissions().allowCopyBy(gAgent.getID(),
+	//									   gAgent.getGroupID())
+	//   || !item->getPermissions().allowTransferTo(LLUUID::null))
+	//{
+	//	return ACCEPT_NO_LOCKED;
+	//}
+	// </edit>a
 	if(drop)
 	{
 		dropObject(obj, FALSE, TRUE, FALSE);

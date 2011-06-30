@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
 # can be removed when we use full paths for all libraries.
 cmake_policy(SET CMP0003 OLD)
 
-set(ROOT_PROJECT_NAME "Singularity" CACHE STRING
+set(ROOT_PROJECT_NAME "Impostor" CACHE STRING
     "The root project/makefile/solution name. Defaults to SecondLife.")
 project(${ROOT_PROJECT_NAME})
 
@@ -48,6 +48,7 @@ add_subdirectory(${LIBS_OPEN_PREFIX}llaudio)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcharacter)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcommon)
 add_subdirectory(${LIBS_OPEN_PREFIX}llimage)
+add_subdirectory(${LIBS_OPEN_PREFIX}llkdu)
 add_subdirectory(${LIBS_OPEN_PREFIX}libopenjpeg)
 add_subdirectory(${LIBS_OPEN_PREFIX}llimagej2coj)
 add_subdirectory(${LIBS_OPEN_PREFIX}llinventory)
@@ -58,11 +59,6 @@ add_subdirectory(${LIBS_OPEN_PREFIX}llrender)
 add_subdirectory(${LIBS_OPEN_PREFIX}llvfs)
 add_subdirectory(${LIBS_OPEN_PREFIX}llwindow)
 add_subdirectory(${LIBS_OPEN_PREFIX}llxml)
-
-if (EXISTS ${LIBS_CLOSED_DIR}llkdu AND NOT STANDALONE)
-  add_subdirectory(${LIBS_CLOSED_PREFIX}llkdu)
-endif (EXISTS ${LIBS_CLOSED_DIR}llkdu AND NOT STANDALONE)
-
 add_subdirectory(${LIBS_OPEN_PREFIX}lscript)
 
 if (WINDOWS AND EXISTS ${LIBS_CLOSED_DIR}copy_win_scripts)
@@ -106,7 +102,7 @@ if (VIEWER)
   endif (LINUX)
 
   add_subdirectory(${VIEWER_PREFIX}newview)
-  add_dependencies(viewer secondlife-bin)
+  add_dependencies(viewer Impostor)
 endif (VIEWER)
 
 # Linux builds the viewer and server in 2 separate projects

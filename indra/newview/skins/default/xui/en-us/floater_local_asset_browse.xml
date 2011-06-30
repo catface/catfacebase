@@ -4,7 +4,7 @@
 
 <floater
 	name="local_bitmap_browser_floater"
-	title="Local Bitmap Browser"
+	title="Impostor Local Bitmap Browser"
 	can_resize="true"
 	can_minimize="true"
 	can_close="true"

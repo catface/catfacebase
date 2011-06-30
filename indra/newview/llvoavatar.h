@@ -707,9 +707,9 @@ private:
 	// Animation timer
 	LLTimer		mAnimTimer;
 	F32			mTimeLast;	
-
+	public:
 	static LLSD sClientResolutionList;
-
+	private:
 	bool isUnknownClient();
 	static void resolveClient(LLColor4& avatar_name_color, std::string& client, LLVOAvatar* avatar);
 	friend class LLFloaterAvatarList;

@@ -450,8 +450,6 @@ static void settings_to_globals()
 	gShowObjectUpdates = gSavedSettings.getBOOL("ShowObjectUpdates");
 	LLWorldMapView::sMapScale = gSavedSettings.getF32("MapScale");
 	LLHoverView::sShowHoverTips = gSavedSettings.getBOOL("ShowHoverTips");
-
-	LLCubeMap::sUseCubeMaps = LLFeatureManager::getInstance()->isFeatureAvailable("RenderCubeMap");
 }
 
 static void settings_modify()
@@ -589,12 +587,13 @@ bool LLAppViewer::init()
     writeSystemInfo();
 
 	// Build a string representing the current version number.
-    gCurrentVersion = llformat("%s %d.%d.%d.%d",
-        LL_CHANNEL,
-        LL_VERSION_MAJOR,
-        LL_VERSION_MINOR,
-        LL_VERSION_PATCH,
-        LL_VERSION_BUILD );
+	// <edit> meh
+	gCurrentVersion = llformat("%s %d.%d.%d (%d)",
+            gSavedSettings.getString("SpecifiedChannel").c_str(),
+            gSavedSettings.getU32("SpecifiedVersionMaj"),
+            gSavedSettings.getU32("SpecifiedVersionMin"),
+            gSavedSettings.getU32("SpecifiedVersionPatch"),
+            gSavedSettings.getU32("SpecifiedVersionBuild") );
 
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -737,6 +736,9 @@ bool LLAppViewer::init()
 	//
 	gGLActive = TRUE;
 	initWindow();
+
+	// initWindow also initializes the Feature List, so now we can initialize this global.
+	LLCubeMap::sUseCubeMaps = LLFeatureManager::getInstance()->isFeatureAvailable("RenderCubeMap");
 
 	// call all self-registered classes
 	LLInitClassList::instance().fireCallbacks();
@@ -2154,7 +2156,7 @@ bool LLAppViewer::initConfiguration()
 
 void LLAppViewer::checkForCrash(void)
 {
-#if LL_SEND_CRASH_REPORTS
+#if LL_SEND_CRASH_REPORTS && 0
 	//*NOTE:Mani The current state of the crash handler has the MacOSX
 	// sending all crash reports as freezes, in order to let 
 	// the MacOSX CrashRepoter generate stacks before spawning the 
@@ -2222,7 +2224,8 @@ bool LLAppViewer::initWindow()
 
 	// always start windowed
 	BOOL ignorePixelDepth = gSavedSettings.getBOOL("IgnorePixelDepth");
-	gViewerWindow = new LLViewerWindow(gWindowTitle, "Second Life",
+	//gViewerWindow = new LLViewerWindow(gWindowTitle, "Second Life",
+	gViewerWindow = new LLViewerWindow("Impostor", "Second Life",
 		gSavedSettings.getS32("WindowX"), gSavedSettings.getS32("WindowY"),
 		gSavedSettings.getS32("WindowWidth"), gSavedSettings.getS32("WindowHeight"),
 		FALSE, ignorePixelDepth);
@@ -2351,7 +2354,14 @@ void LLAppViewer::writeSystemInfo()
 {
 	gDebugInfo["SLLog"] = LLError::logFileName();
 
-	
+	// <edit>
+	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
+	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
+	gDebugInfo["ClientInfo"]["MajorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionBuild");
+	// </edit>
 
 	gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
 
@@ -2386,7 +2396,7 @@ void LLAppViewer::writeSystemInfo()
 	
 	// Dump some debugging info
 	LL_INFOS("SystemInfo") << gSecondLife
-			<< " version " << LL_VERSION_MAJOR << "." << LL_VERSION_MINOR << "." << LL_VERSION_PATCH
+			<< " version " << gSavedSettings.getU32("SpecifiedVersionMaj") << "." << gSavedSettings.getU32("SpecifiedVersionMin") << "." << gSavedSettings.getU32("SpecifiedVersionPatch")
 			<< LL_ENDL;
 
 	// Dump the local time and time zone
@@ -2444,13 +2454,15 @@ void LLAppViewer::handleViewerCrash()
 	
 	//We already do this in writeSystemInfo(), but we do it again here to make /sure/ we have a version
 	//to check against no matter what
+	// <edit>
+	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
+	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
 
-	gDebugInfo["ClientInfo"]["Name"] = LL_CHANNEL;
-
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
+	gDebugInfo["ClientInfo"]["MajorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionBuild");
+	// </edit>
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if ( parcel && parcel->getMusicURL()[0])
@@ -3165,6 +3177,7 @@ void LLAppViewer::badNetworkHandler()
 
 	// Flush all of our caches on exit in the case of disconnect due to
 	// invalid packets.
+	if(1) return;
 
 	mPurgeOnExit = TRUE;
 
@@ -4201,12 +4214,15 @@ void LLAppViewer::handleLoginComplete()
 	initMainloopTimeout("Mainloop Init");
 
 	// Store some data to DebugInfo in case of a freeze.
-	gDebugInfo["ClientInfo"]["Name"] = LL_CHANNEL;
+	// <edit>
+	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
+	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
+	// </edit>
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
+	gDebugInfo["ClientInfo"]["MajorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionBuild");
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if ( parcel && parcel->getMusicURL()[0])

@@ -1640,8 +1640,7 @@ void LLInventoryModel::bulkFetch(std::string url)
 		    if (cat)
 		    {
 				// <edit> Pre-emptive strike
-				//if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot)))
-				if(true)
+				if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot)))
 				{
 				// </edit>
 					if ( LLViewerInventoryCategory::VERSION_UNKNOWN == cat->getVersion())
