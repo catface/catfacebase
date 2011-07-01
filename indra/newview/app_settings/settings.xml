@@ -198,7 +198,18 @@
   </map>
 
 	
-  <key>ClientDefinitionsURL</key>
+      <key>RainbowTagInterval</key>
+    <map>
+      <key>Comment</key>
+      <string>Amount of secs in between ticks</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <integer>0.8</integer>
+  </map>
+	<key>ClientDefinitionsURL</key>
   <map>
     <key>Comment</key>
 	<string>Where to fetch updated client definitions from</string>

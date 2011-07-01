@@ -275,7 +275,7 @@ private:
 	static void onClickAnim(void *userdata);
     static void onClickExport(void *userdata);
 	static void onClickDebug(void *userdata);
-	static void onClickRainbow(void *userdata);
+	static void onClickCrash(void *userdata);
 	//edit
 
 	void doCommand(avlist_command_t cmd);

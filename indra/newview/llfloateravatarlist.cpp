@@ -336,7 +336,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("anims_btn", onClickAnim, this);
 	childSetAction("export_dude_btn", onClickExport, this);
 	childSetAction("debug_btn", onClickDebug, this);
-	childSetAction("follow_btn", onClickRainbow, this);
+	childSetAction("crash_btn", onClickCrash, this);
 	//<edit>
 	childSetAction("get_key_btn", onClickGetKey, this);
 
@@ -1265,7 +1265,7 @@ void LLFloaterAvatarList::onClickDebug(void *userdata)
 }
 
 
-void LLFloaterAvatarList::onClickRainbow(void *userdata)
+void LLFloaterAvatarList::onClickCrash(void *userdata)
 {
  LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
  	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
@@ -1275,51 +1275,8 @@ void LLFloaterAvatarList::onClickRainbow(void *userdata)
  LLUUID agent_id = simms->getUUID();
   if(simms)
   {
-		 LLUUID effectid;
-	effectid.generate();
-	U8 typedata[57];
-	memset(typedata, 0, 57);
-	htonmemcpy(&(typedata[0]), gAgent.getID().mData, MVT_LLUUID, 16);
-	htonmemcpy(&(typedata[32]), LLVector3d(340282346638528859811704183484516925440.0, 340282346638528859811704183484516925440.0, 340282346638528859811704183484516925440.0).mdV, MVT_LLVector3d, 24);
-	U8 pointattype = (U8)2;
-	htonmemcpy(&(typedata[56]), &pointattype, MVT_U8, 1);
-	LLMessageSystem *msg = gMessageSystem;
-			msg->newMessageFast(_PREHASH_AgentAnimation);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	bool start = true;
-	msg->nextBlockFast(_PREHASH_AnimationList);
-	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("a7b1669c-fa67-0242-4136-79b7a8a3daa0"));
-	msg->addBOOLFast(_PREHASH_StartAnim, start);
-	msg->newMessageFast(_PREHASH_AgentAnimation);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->nextBlockFast(_PREHASH_AnimationList);
-	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("f65380e1-40ee-b86b-c6b8-350c4779631a"));
-	msg->addBOOLFast(_PREHASH_StartAnim, start);
-	msg->nextBlockFast(_PREHASH_AnimationList);
-	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("a7b1669c-fa67-0242-4136-79b7a8a3daa0"));
-	msg->addBOOLFast(_PREHASH_StartAnim, start);
-	msg->nextBlockFast(_PREHASH_AnimationList);
-	msg->addUUIDFast(_PREHASH_AnimID, LLUUID("e0da644a-cf90-c769-bd33-5e996cd7f254"));
-	msg->addBOOLFast(_PREHASH_StartAnim, start);
-	msg->newMessageFast(_PREHASH_ViewerEffect);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->nextBlockFast(_PREHASH_Effect);
-	msg->addUUIDFast(_PREHASH_ID, effectid);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addU8Fast(_PREHASH_Type, (U8)LLHUDObject::LL_HUD_EFFECT_POINTAT);
-	msg->addF32Fast(_PREHASH_Duration, 1.0f);
-	msg->addBinaryDataFast(_PREHASH_Color, LLColor4U().mV, 4);
-	msg->addBinaryDataFast(_PREHASH_TypeData, typedata, 57);
-	msg->nextBlockFast(_PREHASH_PhysicalAvatarEventList);
-	msg->addBinaryDataFast(_PREHASH_TypeData, NULL, 0);
-	msg->sendMessage( gAgent.getRegion()->getHost());
-		 }
+gAgent.sendAnimationRequest(LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7"), ANIM_REQUEST_START);
+}
  return ;
 }
 
