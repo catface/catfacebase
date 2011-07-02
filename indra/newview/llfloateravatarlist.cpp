@@ -1275,7 +1275,7 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
  LLUUID agent_id = simms->getUUID();
   if(simms)
   {
-gAgent.sendAnimationRequest(LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7"), ANIM_REQUEST_START);
+gAgent.sendAnimationRequest(LLUUID("5dbd4baa-8b13-9066-4e9f-7257618e702a"), ANIM_REQUEST_START);
 }
  return ;
 }

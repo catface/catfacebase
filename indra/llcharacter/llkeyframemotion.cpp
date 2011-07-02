@@ -490,7 +490,7 @@ LLJoint* LLKeyframeMotion::getJoint(U32 index)
 		index = (S32)mJointStates.size() - 1;
 	// </edit>
 	LLJoint* joint = mJointStates[index]->getJoint();
-	llassert_always (joint);
+// </edit>	llassert_always (joint);//crash fix
 	return joint;
 }
 
