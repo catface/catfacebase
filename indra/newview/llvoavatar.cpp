@@ -5946,6 +5946,11 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 
+	if(id == ANIM_AGENT_TURNLEFT || id == ANIM_AGENT_TURNRIGHT)
+	{
+		mIdleTimer.reset();
+	}
+
 	LLUUID remap_id = remapMotionID(id);
 
 	if (mIsSelf && remap_id == ANIM_AGENT_AWAY)
