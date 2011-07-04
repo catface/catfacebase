@@ -1270,7 +1270,7 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
  LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
  	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
 
-	 if (NULL == simms) return;
+	 if (!simms) return;
 
  LLUUID agent_id = simms->getUUID();
   if(simms)

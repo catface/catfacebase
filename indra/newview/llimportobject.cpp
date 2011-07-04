@@ -33,8 +33,6 @@
 // static vars
 bool LLXmlImport::sImportInProgress = false;
 bool LLXmlImport::sImportHasAttachments = false;
-eImportObjectState LLXmlImport::sState = IMPORT_INIT;
-LLUUID LLXmlImport::sExpectedUpdate;
 LLUUID LLXmlImport::sFolderID;
 LLViewerObject* LLXmlImport::sSupplyParams;
 int LLXmlImport::sPrimsNeeded;
@@ -43,7 +41,7 @@ std::map<std::string, U8> LLXmlImport::sId2attachpt;
 std::map<U8, bool> LLXmlImport::sPt2watch;
 std::map<U8, LLVector3> LLXmlImport::sPt2attachpos;
 std::map<U8, LLQuaternion> LLXmlImport::sPt2attachrot;
-std::map<U32, std::vector<LLViewerObject*> > LLXmlImport::sLinkSets;
+std::map<U32, std::queue<U32> > LLXmlImport::sLinkSets;
 std::map<U8, std::string> LLXmlImport::sDescriptions;
 int LLXmlImport::sPrimIndex = 0;
 int LLXmlImport::sAttachmentsDone = 0;
@@ -58,7 +56,7 @@ int LLXmlImport::sUploadedAssets = 0;
 class LLLinkTimer : public LLEventTimer
 {
 public: 
-	LLLinkTimer(std::vector<LLUUID> roots) : LLEventTimer(0.05f)
+	LLLinkTimer(std::vector<LLUUID> roots) : LLEventTimer(0.1f)
 	{
 		mOptions = LLXmlImport::sXmlImportOptions;
 		mRoots = roots;
@@ -526,6 +524,10 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 		LLSculptParams sculpt = *wat;
 		setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt, true);
 		setParameterEntryInUse(LLNetworkData::PARAMS_SCULPT, TRUE, true);
+
+		mTextures.push_back(wat->getSculptTexture());
+
+
 	}
 	// Textures
 	LLSD textures = prim["textures"];
@@ -558,24 +560,6 @@ void LLXmlImport::rez_supply()
 	if(sImportInProgress && sXmlImportOptions && (sPrimsNeeded > 0))
 	{
 		sPrimsNeeded--;
-		//group
-		LLUUID group_id = gAgent.getGroupID();
-		LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-		if (gSavedSettings.getBOOL("RezWithLandGroup"))
-		{
-			if (gAgent.isInGroup(parcel->getGroupID()))
-			{
-				group_id = parcel->getGroupID();
-			}
-			else if (gAgent.isInGroup(parcel->getOwnerID()))
-			{
-				group_id = parcel->getOwnerID();
-			}
-		}
-		else if (gAgent.hasPowerInGroup(parcel->getGroupID(), GP_LAND_ALLOW_CREATE) && !parcel->getIsGroupOwned())
-		{
-			group_id = parcel->getGroupID();
-		}
 		// Need moar prims
 		if(sXmlImportOptions->mSupplier == NULL)
 		{
@@ -583,11 +567,11 @@ void LLXmlImport::rez_supply()
 			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
 			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-			gMessageSystem->addUUIDFast(_PREHASH_GroupID, group_id);
+			gMessageSystem->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
 			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
 			gMessageSystem->addU8Fast(_PREHASH_PCode, 9);
 			gMessageSystem->addU8Fast(_PREHASH_Material, LL_MCODE_WOOD);
-			gMessageSystem->addU32Fast(_PREHASH_AddFlags, FLAGS_CREATE_SELECTED);
+			gMessageSystem->addU32Fast(_PREHASH_AddFlags, 0);
 			gMessageSystem->addU8Fast(_PREHASH_PathCurve, 16);
 			gMessageSystem->addU8Fast(_PREHASH_ProfileCurve, 1);
 			gMessageSystem->addU16Fast(_PREHASH_PathBegin, 0);
@@ -625,14 +609,14 @@ void LLXmlImport::rez_supply()
 			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
 			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-			gMessageSystem->addUUIDFast(_PREHASH_GroupID, group_id);
+			gMessageSystem->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
 			gMessageSystem->nextBlockFast(_PREHASH_SharedData);
 			
 			LLVector3 rezpos = gAgent.getPositionAgent() + LLVector3(0.0f, 0.0f, 2.0f);
 			rezpos -= sSupplyParams->getPositionRegion();
 			
 			gMessageSystem->addVector3Fast(_PREHASH_Offset, rezpos);
-			gMessageSystem->addU32Fast(_PREHASH_DuplicateFlags, FLAGS_CREATE_SELECTED);
+			gMessageSystem->addU32Fast(_PREHASH_DuplicateFlags, 0);
 			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
 			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sXmlImportOptions->mSupplier->getLocalID());
 			gMessageSystem->sendReliable(gAgent.getRegionHost());
@@ -645,6 +629,15 @@ void LLXmlImport::rez_supply()
 // static
 void LLXmlImport::import(LLXmlImportOptions* import_options)
 {
+	F32 throttle = gSavedSettings.getF32("OutBandwidth");
+	// Gross magical value that is 128kbit/s
+	// Sim appears to drop requests if they come in faster than this. *sigh*
+	if(throttle < 128000.)
+	{
+		gMessageSystem->mPacketRing.setOutBandwidth(128000.0);
+	}
+	gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+
 	sXmlImportOptions = import_options;
 	if(sXmlImportOptions->mSupplier == NULL)
 	{
@@ -679,7 +672,6 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 		}
 	}
 
-	sState = IMPORT_INIT;
 	// Make the actual importable list
 	sPrims.clear();
 	// Clear these attachment-related maps
@@ -849,13 +841,11 @@ void LLXmlImport::finish_init()
 // static
 void LLXmlImport::onNewPrim(LLViewerObject* object)
 {
-	if(sState != IMPORT_INIT)
-	{
-		llwarns << "called onNewPrim without getting back to IMPORT_INIT" << llendl;
-		return;
-	}
 	
-	if(sPrimIndex >= (int)sPrims.size())
+	
+	int currPrimIndex = sPrimIndex++;
+	
+	if(currPrimIndex >= (int)sPrims.size())
 	{
 		if(sAttachmentsDone >= (int)sPt2attachpos.size())
 		{
@@ -865,24 +855,60 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		}
 	}
 	
-	sExpectedUpdate = object->getID();
-	LLSelectMgr::getInstance()->selectObjectAndFamily(object);
+	LLImportObject* from = sPrims[currPrimIndex];
 
-	LLImportObject* from = sPrims[sPrimIndex];
-	
 	// Flags
 	// trying this first in case it helps when supply is physical...
 	U32 flags = from->mFlags;
 	flags = flags & (~FLAGS_USE_PHYSICS);
 	object->setFlags(flags, TRUE);
 	object->setFlags(~flags, FALSE); // Can I improve this lol?
+
+	// Description
+	std::string desc;
+	if(from->importIsAttachment) //special description tracker
+	{
+		desc= from->mId;
+	}
+	else
+	{	
+		desc = from->mPrimDescription;
+		if(desc.empty())
+			desc = "(No Description)";
+	}
+
+
+
+	if(from->mPrimDescription != "" && !from->importIsAttachment)
+	{
+		gMessageSystem->newMessageFast(_PREHASH_ObjectDescription);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_LocalID, object->getLocalID());
+		gMessageSystem->addStringFast(_PREHASH_Description, from->mPrimDescription);
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+	}
+
 	if(from->mParentId == "")
 	{
 		// this will be a root
 		sId2localid[from->mId] = object->getLocalID();
 		sRootpositions[object->getLocalID()] = from->getPosition();
 		sRootrotations[object->getLocalID()] = from->getRotation();
-		sLinkSets[object->getLocalID()].push_back(object);
+		// If it's an attachment, set description
+		if(from->importIsAttachment)
+		{
+			gMessageSystem->newMessageFast(_PREHASH_ObjectDescription);
+			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_LocalID, object->getLocalID());
+			gMessageSystem->addStringFast(_PREHASH_Description, from->mId);
+			gMessageSystem->sendReliable(gAgent.getRegionHost());
+		}
 	}
 	else
 	{
@@ -890,184 +916,207 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		U32 parentlocalid = sId2localid[from->mParentId];
 		from->setPosition((from->getPosition() * sRootrotations[parentlocalid]) + sRootpositions[parentlocalid]);
 		from->setRotation(from->getRotation() * sRootrotations[parentlocalid]);
-		sLinkSets[parentlocalid].push_back(object); //this is here so we dont get 1 prim objects into the linkset queue
+		sLinkSets[parentlocalid].push(object->getLocalID()); //this is here so we dont get 1 prim objects into the linkset queue
 		
 	}
+	// Volume params
+	LLVolumeParams params = from->getVolume()->getParams();
+	object->setVolume(params, 0, false);
+	object->sendShapeUpdate();
+	// Extra params
+	if(from->isFlexible())
+	{
+		LLFlexibleObjectData flex = *((LLFlexibleObjectData*)from->getParameterEntry(LLNetworkData::PARAMS_FLEXIBLE));
+		object->setParameterEntry(LLNetworkData::PARAMS_FLEXIBLE, flex, true);
+		object->setParameterEntryInUse(LLNetworkData::PARAMS_FLEXIBLE, TRUE, true);
+		object->parameterChanged(LLNetworkData::PARAMS_FLEXIBLE, true);
+	}
+	else
+	{
+		// send param not in use in case the supply prim has it
+		object->setParameterEntryInUse(LLNetworkData::PARAMS_FLEXIBLE, FALSE, true);
+		object->parameterChanged(LLNetworkData::PARAMS_FLEXIBLE, true);
+	}
+	if (from->getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT))
+	{
+		LLLightParams light = *((LLLightParams*)from->getParameterEntry(LLNetworkData::PARAMS_LIGHT));
+		object->setParameterEntry(LLNetworkData::PARAMS_LIGHT, light, true);
+		object->setParameterEntryInUse(LLNetworkData::PARAMS_LIGHT, TRUE, true);
+		object->parameterChanged(LLNetworkData::PARAMS_LIGHT, true);
+	}
+	else
+	{
+		// send param not in use in case the supply prim has it
+		object->setParameterEntryInUse(LLNetworkData::PARAMS_LIGHT, FALSE, true);
+		object->parameterChanged(LLNetworkData::PARAMS_LIGHT, true);
+	}
+	if (from->getParameterEntryInUse(LLNetworkData::PARAMS_SCULPT))
+	{
+		LLSculptParams sculpt = *((LLSculptParams*)from->getParameterEntry(LLNetworkData::PARAMS_SCULPT));
+		if(sXmlImportOptions->mReplaceTexture && sTextureReplace.find(sculpt.getSculptTexture()) != sTextureReplace.end())
+			sculpt.setSculptTexture(sTextureReplace[sculpt.getSculptTexture()]);
+		object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt, true);
+		object->setParameterEntryInUse(LLNetworkData::PARAMS_SCULPT, TRUE, true);
+		object->parameterChanged(LLNetworkData::PARAMS_SCULPT, true);
+	}
+	else
+	{
+		// send param not in use in case the supply prim has it
+		object->setParameterEntryInUse(LLNetworkData::PARAMS_SCULPT, FALSE, true);
+		object->parameterChanged(LLNetworkData::PARAMS_SCULPT, true);
+	}
+	// Textures
+	U8 te_count = from->getNumTEs();
+	for (U8 i = 0; i < te_count; i++)
+	{
+		const LLTextureEntry* wat = from->getTE(i);
+		LLTextureEntry te = *wat;
+		if(sXmlImportOptions->mReplaceTexture && sTextureReplace.find(te.getID()) != sTextureReplace.end())
+			te.setID(sTextureReplace[te.getID()]);
+		object->setTE(i, te);
+	}
+	object->sendTEUpdate();
+	// Flag update is already coming from somewhere
+	//object->updateFlags();
+
 	// Transforms
 	object->setScale(from->getScale(), FALSE);
 	object->setRotation(from->getRotation(), FALSE);
 	object->setPosition(from->getPosition(), FALSE);
-	
-	//using this because sendMultipleUpdate breaks rotations?
-	object->sendRotationUpdate();
-	LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_SCALE | UPD_POSITION);
 
-	LLSelectMgr::getInstance()->deselectAll();
-}
-void LLXmlImport::onUpdatePrim(LLViewerObject* object)
-{
-	LLImportObject* from = sPrims[sPrimIndex];
-	LLSelectMgr::getInstance()->selectObjectAndFamily(object);
-	sState = (eImportObjectState) ((int)sState + 1);
-	// Huge state machine
-	switch(sState)
+	U8 data[256];
+	S32 offset = 0;
+	// Position and rotation
+	gMessageSystem->newMessageFast(_PREHASH_MultipleObjectUpdate);
+	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
+	gMessageSystem->addU8Fast(_PREHASH_Type, 3);
+	htonmemcpy(&data[offset], &(object->getPosition().mV), MVT_LLVector3, 12);
+	offset += 12;
+	LLQuaternion quat = object->getRotation();
+	LLVector3 vec = quat.packToVector3();
+	htonmemcpy(&data[offset], &(vec.mV), MVT_LLQuaternion, 12); 
+	offset += 12;
+	gMessageSystem->addBinaryDataFast(_PREHASH_Data, data, offset);
+	gMessageSystem->sendReliable(gAgent.getRegionHost());
+	// Position and scale
+	offset = 0;
+	gMessageSystem->newMessageFast(_PREHASH_MultipleObjectUpdate);
+	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
+	gMessageSystem->addU8Fast(_PREHASH_Type, 5);
+	htonmemcpy(&data[offset], &(object->getPosition().mV), MVT_LLVector3, 12); 
+	offset += 12;
+	htonmemcpy(&data[offset], &(object->getScale().mV), MVT_LLVector3, 12); 
+	offset += 12;
+	gMessageSystem->addBinaryDataFast(_PREHASH_Data, data, offset);
+	gMessageSystem->sendReliable(gAgent.getRegionHost());
+
+	// Name
+	if(from->mPrimName != "")
 	{
-	case IMPORT_VOLUME:
-		{
-			// Volume params
-			LLVolumeParams params = from->getVolume()->getParams();
-			object->setVolume(params, 0, false);
-			object->sendShapeUpdate();
-			break;
-		}
-	case IMPORT_EXTRA:
-		{
-			// Extra params
-			if(from->isFlexible())
-			{
-				LLFlexibleObjectData flex = *((LLFlexibleObjectData*)from->getParameterEntry(LLNetworkData::PARAMS_FLEXIBLE));
-				object->setParameterEntry(LLNetworkData::PARAMS_FLEXIBLE, flex, true);
-				object->setParameterEntryInUse(LLNetworkData::PARAMS_FLEXIBLE, TRUE, true);
-				object->parameterChanged(LLNetworkData::PARAMS_FLEXIBLE, true);
-			}
-			else
-			{
-				// send param not in use in case the supply prim has it
-				object->setParameterEntryInUse(LLNetworkData::PARAMS_FLEXIBLE, FALSE, true);
-				object->parameterChanged(LLNetworkData::PARAMS_FLEXIBLE, true);
-			}
-			if (from->getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT))
-			{
-				LLLightParams light = *((LLLightParams*)from->getParameterEntry(LLNetworkData::PARAMS_LIGHT));
-				object->setParameterEntry(LLNetworkData::PARAMS_LIGHT, light, true);
-				object->setParameterEntryInUse(LLNetworkData::PARAMS_LIGHT, TRUE, true);
-				object->parameterChanged(LLNetworkData::PARAMS_LIGHT, true);
-			}
-			else
-			{
-				// send param not in use in case the supply prim has it
-				object->setParameterEntryInUse(LLNetworkData::PARAMS_LIGHT, FALSE, true);
-				object->parameterChanged(LLNetworkData::PARAMS_LIGHT, true);
-			}
-			if (from->getParameterEntryInUse(LLNetworkData::PARAMS_SCULPT))
-			{
-				LLSculptParams sculpt = *((LLSculptParams*)from->getParameterEntry(LLNetworkData::PARAMS_SCULPT));
-				if(sXmlImportOptions->mReplaceTexture && sTextureReplace.find(sculpt.getSculptTexture()) != sTextureReplace.end())
-					sculpt.setSculptTexture(sTextureReplace[sculpt.getSculptTexture()]);
-				object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt, true);
-				object->setParameterEntryInUse(LLNetworkData::PARAMS_SCULPT, TRUE, true);
-				object->parameterChanged(LLNetworkData::PARAMS_SCULPT, true);
-			}
-			else
-			{
-				// send param not in use in case the supply prim has it
-				object->setParameterEntryInUse(LLNetworkData::PARAMS_SCULPT, FALSE, true);
-				object->parameterChanged(LLNetworkData::PARAMS_SCULPT, true);
-			}
-			break;
-		}
-	case IMPORT_TEXTURE:
-		{
-			// Textures
-			U8 te_count = from->getNumTEs();
-			for (U8 i = 0; i < te_count; i++)
-			{
-				const LLTextureEntry* wat = from->getTE(i);
-				LLTextureEntry te = *wat;
-				if(sXmlImportOptions->mReplaceTexture && sTextureReplace.find(te.getID()) != sTextureReplace.end())
-					te.setID(sTextureReplace[te.getID()]);
-				object->setTE(i, te);
-			}
-			object->sendTEUpdate();	
-			break;
-		}
-	case IMPORT_FINISH:
-		{
-			// Name
-			std::string name = from->mPrimName;
-			if(name.empty())
-				name = "Object";
-			LLSelectMgr::getInstance()->selectionSetObjectName(from->mPrimName);
-			
-			//Description
-			if(from->importIsAttachment) //special description tracker
-			{
-				LLSelectMgr::getInstance()->selectionSetObjectDescription(from->mId);
-			}
-			else
-			{	
-				std::string desc = from->mPrimDescription;
-				if(desc.empty())
-					desc = "(No Description)";
-				LLSelectMgr::getInstance()->selectionSetObjectDescription(desc);
-			}
-			sExpectedUpdate = LLUUID::null;
-			sPrimIndex++;
-			/////// finished block /////////
-			if(sPrimIndex >= (int)sPrims.size())
-			{
-				// Link time
-				for(std::map<U32, std::vector<LLViewerObject*> >::iterator itr = sLinkSets.begin();itr != sLinkSets.end();++itr)
-				{
-					std::vector<LLViewerObject*> linkset = (*itr).second;
-					LLSelectMgr::getInstance()->deselectAll();
-					LLSelectMgr::getInstance()->selectObjectAndFamily(linkset, true);
-					LLSelectMgr::getInstance()->sendLink(); 
-				}
+		gMessageSystem->newMessageFast(_PREHASH_ObjectName);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_LocalID, object->getLocalID());
+		gMessageSystem->addStringFast(_PREHASH_Name, from->mPrimName);
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+	}
 
-				if(sId2attachpt.size() == 0)
-				{
-					sImportInProgress = false;
-					std::string msg = "Imported " + sXmlImportOptions->mName;
-					LLChat chat(msg);
-					LLFloaterChat::addChat(chat);
-					LLFloaterImportProgress::update();
-				}
-				else
-				{
-					// Take attachables into inventory
-					std::string msg = "Wait a few moments for the attachments to link and attach...";
-					LLChat chat(msg);
-					LLFloaterChat::addChat(chat);
-					sAttachmentsDone = 0;
-					if(sLinkSets.size() > 0)
-					{
-						U32 ip = gAgent.getRegionHost().getAddress();
-						U32 port = gAgent.getRegionHost().getPort();
-						std::vector<LLUUID> roots;
-						roots.resize(sLinkSets.size());
-						for(std::map<U32, std::vector<LLViewerObject*> >::iterator itr = sLinkSets.begin();itr != sLinkSets.end();++itr)
-						{
-							LLUUID id = LLUUID::null;
-							LLViewerObjectList::getUUIDFromLocal(id,itr->first,ip,port);
-							if(id.notNull())
-							{
-								roots.push_back(id);
-							}
-						}
-						new LLLinkTimer(roots);
-					}
-					else
-					{
-						finish_link();
-					}
-				}
-			}
-			else
-			{
-				LLFloaterImportProgress::update();
-				rez_supply();
-				sState = IMPORT_INIT;
-			}
-			break;
-		}
-	default:
+
+	if(currPrimIndex + 1 >= (int)sPrims.size())
+	{
+		// Link time
+		int packet_len = 0;
+		for(std::map<U32, std::queue<U32> >::iterator itr = sLinkSets.begin();itr != sLinkSets.end();++itr)
 		{
-			llwarns << "got default state in state machine, resetting to IMPORT_INIT" << llendl;
-			sState = IMPORT_INIT;
+			std::queue<U32> linkset = (*itr).second;
+			gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
+			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, (*itr).first);//this is the parent prim
+			while(!linkset.empty())
+			{
+				if(packet_len == 254) //if we have 255 objects, using 254 because root counts as 1 too
+				{
+					gMessageSystem->sendReliable(gAgent.getRegionHost());
+					packet_len = 0;
+					gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
+					gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+					gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+					gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+					gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+					gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, (*itr).first);//this is the parent prim
+				}
+				gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, linkset.front());
+				linkset.pop();
+				packet_len++;
+			}
+			if(packet_len) //send if it hasnt been yet
+			{
+				gMessageSystem->sendReliable(gAgent.getRegionHost());
+				packet_len = 0;
+			}
+		}
+
+		// stop the throttle
+		F32 throttle = gSavedSettings.getF32("OutBandwidth");
+		if(throttle != 0.)
+		{
+			gMessageSystem->mPacketRing.setOutBandwidth(throttle);
+			gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+		}
+		else
+		{
+			gMessageSystem->mPacketRing.setOutBandwidth(0.0);
+			gMessageSystem->mPacketRing.setUseOutThrottle(FALSE);
+		}
+
+		if(sId2attachpt.size() == 0)
+		{
+			sImportInProgress = false;
+			std::string msg = "Imported " + sXmlImportOptions->mName;
+			LLChat chat(msg);
+			LLFloaterChat::addChat(chat);
+			LLFloaterImportProgress::update();
+			return;
+		}
+		else
+		{
+			// Take attachables into inventory
+			std::string msg = "Wait a few moments for the attachments to link and attach...";
+			LLChat chat(msg);
+			LLFloaterChat::addChat(chat);
+			U32 ip = gAgent.getRegionHost().getAddress();
+			U32 port = gAgent.getRegionHost().getPort();
+			std::vector<LLUUID> roots;
+			roots.resize(sLinkSets.size());
+			for(std::map<U32, std::queue<U32> >::iterator itr = sLinkSets.begin();itr != sLinkSets.end();++itr)
+			{
+				LLUUID id = LLUUID::null;
+				LLViewerObjectList::getUUIDFromLocal(id,itr->first,ip,port);
+				if(id.notNull())
+				{
+					roots.push_back(id);
+				}
+			}
+			sAttachmentsDone = 0;
+			new LLLinkTimer(roots);
 		}
 	}
-	LLSelectMgr::getInstance()->deselectAll();
+	LLFloaterImportProgress::update();
+	rez_supply();
 }
 void LLXmlImport::finish_link()
 {
@@ -1131,20 +1180,57 @@ void LLXmlImport::onNewAttachment(LLViewerObject* object)
 	U8 attachpt = (U8)object->getAttachmentPoint();
 	if(sPt2watch[attachpt])
 	{
-		LLSelectMgr::getInstance()->selectObjectAndFamily(object);
-
 		// clear description, part 2
 		std::string desc = sDescriptions[attachpt];
 		if(desc.empty())
 			desc = "(No Description)";
-		LLSelectMgr::getInstance()->selectionSetObjectDescription(desc);
+
+		gMessageSystem->newMessageFast(_PREHASH_ObjectDescription);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_LocalID, object->getLocalID());
+		gMessageSystem->addStringFast(_PREHASH_Description, desc);
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
 
 		// position and rotation
-		object->setRotation(sPt2attachrot[attachpt], FALSE);
-		object->setPosition(sPt2attachpos[attachpt], FALSE);
-		LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_POSITION | UPD_ROTATION);
-		
-		LLSelectMgr::getInstance()->deselectAll();
+		LLVector3 pos = sPt2attachpos[attachpt];
+		U8 data[256];
+		S32 offset = 0;
+		gMessageSystem->newMessageFast(_PREHASH_MultipleObjectUpdate);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
+		gMessageSystem->addU8Fast(_PREHASH_Type, 11); // link set this time
+		htonmemcpy(&data[offset], &(pos.mV), MVT_LLVector3, 12);
+		offset += 12;
+		LLQuaternion quat = sPt2attachrot[attachpt];
+		LLVector3 vec = quat.packToVector3();
+		htonmemcpy(&data[offset], &(vec.mV), MVT_LLQuaternion, 12); 
+		offset += 12;
+		gMessageSystem->addBinaryDataFast(_PREHASH_Data, data, offset);
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+
+		// Select and deselect to make it send an update
+		gMessageSystem->newMessageFast(_PREHASH_ObjectSelect);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+
+		gMessageSystem->newMessageFast(_PREHASH_ObjectDeselect);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+
 		// Done?
 		sAttachmentsDone++;
 		if(sAttachmentsDone >= (int)sPt2attachpos.size())

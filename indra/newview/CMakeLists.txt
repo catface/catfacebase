@@ -1460,7 +1460,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${ELFIO_LIBRARIES}
     )
 
-if (USE_KDU)
+if (WINDOWS)
     target_link_libraries(${VIEWER_BINARY_NAME}
         ${LLKDU_LIBRARIES}
         ${KDU_LIBRARY}
@@ -1469,7 +1469,7 @@ else (USE_KDU)
     target_link_libraries(${VIEWER_BINARY_NAME}
         ${LLIMAGEJ2COJ_LIBRARIES}
         )
-endif (USE_KDU)
+endif (WINDOWS)
 if (LINUX)
   add_custom_command(
       OUTPUT secondlife-stripped

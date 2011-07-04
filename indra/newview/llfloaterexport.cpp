@@ -24,10 +24,10 @@
 #include "llsdutil_math.h"
 #include "llimagej2c.h"
 
+std::vector<LLFloaterExport*> LLFloaterExport::instances;
+
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
-
-std::vector<LLFloaterExport*> LLFloaterExport::instances;
 
 class CacheReadResponder : public LLTextureCache::ReadResponder
 {
@@ -290,20 +290,22 @@ LLFloaterExport::~LLFloaterExport()
 BOOL LLFloaterExport::postBuild(void)
 {
 	if(!mSelection) return TRUE;
-	std::map<LLViewerObject*, bool> avatars; // moved from bottom
-    LLViewerObject* foo =LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
-    LLVOAvatar* avatar = find_avatar_from_object(foo); 
-    if (avatar && mSelection->getRootObjectCount() < 1) // check if avatar and only avatar
-    {
-         if(!avatars[foo])
-         {
-             avatars[foo] = true;// is avatar and not in the avatar map list also i add
-         }
-    }
-    else
-    {
-        if(mSelection->getRootObjectCount() < 1) return TRUE; // there is some prims ( not avatar alone) 
-    }
+
+	std::map<LLViewerObject*, bool> avatars;
+
+	LLViewerObject* foo = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+	LLVOAvatar* avatar = find_avatar_from_object(foo); 
+	if (avatar && mSelection->getRootObjectCount() < 1)
+	{
+		if(!avatars[foo])
+		{
+			avatars[foo] = true;
+		}
+	}
+	else
+	{
+		if(mSelection->getRootObjectCount() < 1) return TRUE;
+	}
 
 	// New stuff: Populate prim name map
 
@@ -321,7 +323,6 @@ BOOL LLFloaterExport::postBuild(void)
 
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("export_list");
 
-//	std::map<LLViewerObject*, bool> avatars;
 
 	for (LLObjectSelection::valid_root_iterator iter = mSelection->valid_root_begin();
 		 iter != mSelection->valid_root_end(); iter++)
