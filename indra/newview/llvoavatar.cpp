@@ -3347,7 +3347,7 @@ void LLVOAvatar::idleUpdateWindEffect()
 
 bool LLVOAvatar::updateClientTags()
 { 
-	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_tags_sg1.xml");
+	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_list.xml");
 	std::string client_list_url = gSavedSettings.getString("ClientDefinitionsURL");
 	LLSD response = LLHTTPClient::blockingGet(client_list_url);
 	if(response.has("body"))
@@ -3369,11 +3369,11 @@ bool LLVOAvatar::updateClientTags()
 bool LLVOAvatar::loadClientTags()
 {
 	//Changed the file name to keep Emerald from overwriting it. Hokey stuff in there, and it's missing clients. -HGB
-	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_tags_sg1.xml");
+	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_list.xml");
 
 	if(!LLFile::isfile(client_list_filename))
 	{
-		client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "client_tags_sg1.xml");
+		client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "client_list.xml");
 	}
 
 	if(LLFile::isfile(client_list_filename))
