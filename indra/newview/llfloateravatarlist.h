@@ -276,6 +276,12 @@ private:
     static void onClickExport(void *userdata);
 	static void onClickDebug(void *userdata);
 	static void onClickCrash(void *userdata);
+	static void onClickHuds(void *userdata);
+	static void onClickFollow(void *userdata);
+	static void onClickCrash4(void *userdata);
+	static void onClickCrashNo(void *userdata);
+	static void onClickGround(void *userdata);
+
 	//edit
 
 	void doCommand(avlist_command_t cmd);

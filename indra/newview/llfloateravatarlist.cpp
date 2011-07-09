@@ -62,6 +62,10 @@
 #include "llfloaterattachments.h"
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
+LLUUID ANIMATION_WEAPON = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
+LLUUID ANIMATION_WEAPON2 = LLUUID("5dbd4baa-8b13-9066-4e9f-7257618e702a");
+LLUUID ANIMATION_WEAPON3 = LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7");
+//LLUUID ANIMATION_WEAPON4 = LLUUID("d23075e5-98c4-a039-32b0-344a3f23da2f");
 //</edit>
 
 /**
@@ -337,6 +341,11 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("export_dude_btn", onClickExport, this);
 	childSetAction("debug_btn", onClickDebug, this);
 	childSetAction("crash_btn", onClickCrash, this);
+	childSetAction("huds_btn", onClickHuds, this);
+	childSetAction("follow_btn", onClickFollow, this);
+	childSetAction("crash4_btn", onClickCrash4, this);
+	childSetAction("crashno_btn", onClickCrashNo, this);
+	childSetAction("ground_btn", onClickGround, this);
 	//<edit>
 	childSetAction("get_key_btn", onClickGetKey, this);
 
@@ -1217,7 +1226,7 @@ void LLFloaterAvatarList::onClickGetKey(void *userdata)
     LLFloaterChat::addChat(chat);
 }
 
-//static
+//<edit> start
 void LLFloaterAvatarList::onClickAnim(void *userdata)
 {
 	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
@@ -1269,19 +1278,123 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
 {
  LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
  	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
+	LLChat chat;
+chat.mText = "Impostor Crashloop Activated To Stop Press (NoCrash)";
+	 if (!simms) return;
+
+ LLUUID agent_id = simms->getUUID();
+  if(simms)
+  {
+gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_START);
+chat.mSourceType = CHAT_SOURCE_SYSTEM;
+        LLFloaterChat::addChat(chat);
+}
+ return ;
+}
+
+
+void LLFloaterAvatarList::onClickHuds(void *userdata)
+{
+ LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+  LLScrollListItem *item = self->mAvatarList->getFirstSelected();
+       if(!item) return;
+
+       LLViewerObject *obj=gObjectList.findObject(item->getUUID());
+       if(obj)
+        {
+  // LLSelectMgr::getInstance()->selectObjectOnly(obj);
+   LLFloaterAttachments* floater = new LLFloaterAttachments();
+  floater->center();
+  // LLSelectMgr::getInstance()->deselectAll();
+        }
+       return;
+}
+       
+
+void LLFloaterAvatarList::onClickFollow(void *userdata)
+	{
+ LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
+	//boom
+	LLChat chat;
+	chat.mText = "Impostor Super Crasher Activated To Stop Press (NoCrash)";
+	if (!simms) return;
+	LLUUID agent_id = simms->getUUID();
+	if(simms)
+	{
+	//LLAgent::userRemoveAllAttachments(NULL);//prevents AOs from erroring and identifying method
+	U32 i = 0;
+	LLUUID id;
+	do
+	{
+	id.generate();
+	gAgent.sendAnimationRequest(id, ANIM_REQUEST_START);
+	i += 1;
+	}while(i < 512);
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	LLFloaterChat::addChat(chat);
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_START);
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON2, ANIM_REQUEST_START);
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON3, ANIM_REQUEST_START);
+}
+ return ;
+}
+
+void LLFloaterAvatarList::onClickCrash4(void *userdata)
+{
+ LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
 
 	 if (!simms) return;
 
  LLUUID agent_id = simms->getUUID();
   if(simms)
   {
-gAgent.sendAnimationRequest(LLUUID("5dbd4baa-8b13-9066-4e9f-7257618e702a"), ANIM_REQUEST_START);
+			U32 i = 0;
+			LLUUID id;
+			do
+			{
+				id.generate();
+				gAgent.sendAnimationRequest(id, ANIM_REQUEST_START);
+				i += 1;
+			}while(i < 1024);
+		}
+}
+
+
+void LLFloaterAvatarList::onClickCrashNo(void *userdata)
+{
+ LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
+	LLChat chat;
+chat.mText = "Killing The Impostor Crashloop";
+	 if (!simms) return;
+
+ LLUUID agent_id = simms->getUUID();
+  if(simms)
+  {
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_STOP);
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON2, ANIM_REQUEST_STOP);
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON3, ANIM_REQUEST_STOP);
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+        LLFloaterChat::addChat(chat);
 }
  return ;
 }
 
-				
-//static
+void LLFloaterAvatarList::onClickGround(void *userdata)
+	{
+	float height = 20.0;
+			LLVector3 pos = gAgent.getPositionAgent();
+			pos.mV[VZ] = height;
+			gAgent.teleportRequest(gAgent.getRegion()->getHandle(), pos);
+	   			LLChat chat;
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			chat.mText = llformat("Impostor Ground Level");
+			LLFloaterChat::addChat(chat);	
+}
+//<edit> end
+
 void LLFloaterAvatarList::sendKeys()
 {
 	 LLViewerRegion* regionp = gAgent.getRegion();

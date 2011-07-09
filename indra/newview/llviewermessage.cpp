@@ -4511,12 +4511,6 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
 		return;
 	}
 
-	// Don't play sounds from a region with maturity above current agent maturity
-	if( !gAgent.canAccessMaturityInRegion( region_handle ) )
-	{
-		return;
-	}
-		
 	// <edit>
 	//gAudiop->triggerSound(sound_id, owner_id, gain, LLAudioEngine::AUDIO_TYPE_SFX, pos_global);
 	gAudiop->triggerSound(sound_id, owner_id, gain, LLAudioEngine::AUDIO_TYPE_SFX, pos_global, object_id);
@@ -4553,13 +4547,8 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
 	// audio data into a buffer at this point, as it won't actually
 	// help us out.
 
-	// Don't play sounds from a region with maturity above current agent maturity
-	LLVector3d pos_global = objectp->getPositionGlobal();
-	if (gAgent.canAccessMaturityAtGlobal(pos_global))
-	{
-		// Add audioData starts a transfer internally.
-		sourcep->addAudioData(datap, FALSE);
-	}
+	// Add audioData starts a transfer internally.
+	sourcep->addAudioData(datap, FALSE);
 }
 
 void process_attached_sound(LLMessageSystem *msg, void **user_data)
@@ -4587,14 +4576,6 @@ void process_attached_sound(LLMessageSystem *msg, void **user_data)
 	
 	if (LLMuteList::getInstance()->isMuted(owner_id, LLMute::flagObjectSounds)) return;
 
-	
-	// Don't play sounds from a region with maturity above current agent maturity
-	LLVector3d pos = objectp->getPositionGlobal();
-	if( !gAgent.canAccessMaturityAtGlobal(pos) )
-	{
-		return;
-	}
-	
 	objectp->setAttachedSound(sound_id, owner_id, gain, flags);
 }
 
@@ -5449,6 +5430,55 @@ void process_alert_core(const std::string& message, BOOL modal)
 		snap_filename += SCREEN_HOME_FILENAME;
 		gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight(), FALSE, FALSE);
 	}
+	// <edit>
+	else if(message.find("Can't move object ") == 0)
+	{
+		std::string::size_type begin = message.find("' to \n{ ");
+		if(begin != std::string::npos)
+		{
+			llinfos << "to" << llendl;
+			begin += 8;
+			std::string::size_type end = message.find(" } in region ", begin);
+			if(end != std::string::npos)
+			{
+				std::string::size_type length = end - begin;
+				std::string location = message.substr(begin, length);
+				std::vector<std::string> words;
+				int cutAt;
+				while( (cutAt = location.find(", ")) != std::string::npos )
+				{
+					if(cutAt > 0)
+					{
+						words.push_back(location.substr(0, cutAt));
+					}
+					location = location.substr(cutAt + 2);
+				}
+				if(location.length() > 0)
+				{
+					words.push_back(location);
+				}
+				if(words.size() == 3)
+				{
+					// find region name
+					begin = end + 13;
+					end = message.find(" because your objects are not allowed on this parcel.", begin);
+					if(end != std::string::npos)
+					{
+						length = end - begin;
+						std::string region = message.substr(begin, length);
+						region = LLWeb::escapeURL(region);
+						std::string url = "http://slurl.com/secondlife/" + region + "/" + words[0] + "/" + words[1] + "/" + words[2];
+						std::string new_message = message + " " + url;
+						LLStringUtil::format_map_t args;
+						args["[MESSAGE]"] = new_message;
+						//LLNotifyBox::showXml("SystemMessageTip", args);
+						return;
+					}
+				}
+			}
+		}
+	}
+	// </edit>
 
 	const std::string ALERT_PREFIX("ALERT: ");
 	const std::string NOTIFY_PREFIX("NOTIFY: ");
