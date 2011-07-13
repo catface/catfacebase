@@ -21,7 +21,7 @@
 		<panel border="true" bottom_delta="-180" follows="left|top|right|bottom" height="255"
 		       label="Avatar" left="3" mouse_opaque="true"
 		     name="actions_tab" width="295">
-			<!-- upper row -->
+			<!-- first row -->
 			<button
 			       name="profile_btn"
 			       label="Profile"
@@ -66,7 +66,7 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-			<!-- upper middle row -->
+			<!-- second row -->
 			<button
 			       name="im_btn"
 			       label="IM"
@@ -111,7 +111,7 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-			<!-- lower middle row-->
+			<!-- third row-->
 			<button
 			       name="mark_btn"
 			       label="(Un)Mark"
@@ -156,7 +156,7 @@
 					font="SansSerifSmall"
 					follows="bottom|left"
 			       />
-			<!-- lower row-->
+			<!-- fourth row-->
 			<button
 			       name="huds_btn"
 			       label="AV Huds"
@@ -192,8 +192,8 @@
 			       />
 			<button
 			       name="follow_btn"
-			       label="Crash 2"
-			       tool_tip="Faster Crasher than Crash"
+			       label="(A) Crash"
+			       tool_tip="Executes Impostor Animation Crasher"
 			       left_delta="72"
 			       bottom_delta="0"
 			       width="68"
@@ -201,7 +201,7 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-      <!-- lowest row-->
+      <!-- fifth row-->
       <button
 			       name="focus_btn"
 			       label="Zoom in"
@@ -226,8 +226,8 @@
 			       />
       <button
 			       name="crash_btn"
-			       label="Crash"
-			       tool_tip="Crash Avatars in Range"
+			       label="(S) Crash"
+			       tool_tip="Executes Impostor Sound Crasher"
 			       left_delta="72"
 			       bottom_delta="0"
 			       width="68"
@@ -245,7 +245,52 @@
 					height="20"
 					font="SansSerifSmall"
 					follows="bottom|left"
-			       />      
+			       />
+      <!-- bottom row-->
+      <button
+			       name="focus_btn"
+			       label="Zoom in"
+			       tool_tip="Zooms in camera on this avatar in the list"
+			       left="3"
+			       bottom_delta="-22"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+      <button
+			       name="ground_btn"
+			       label="TP Ground"
+			       tool_tip="Moves Avatar To Ground Level"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+      <button
+			       name="crash_btn"
+			       label="(S) Crash"
+			       tool_tip="Executes Impostor Sound Crasher"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+      <button
+					name="crash4_btn"
+					label="cSpam"
+					tool_tip="Sends Calling Card Spam To Selected Avatar"
+					left_delta="72"
+					bottom_delta="0"
+					width="68"
+					height="20"
+					font="SansSerifSmall"
+					follows="bottom|left"
+			       />
 		</panel>
 
 		<panel border="true" bottom_delta="-150" follows="left|top|right|bottom" height="255"

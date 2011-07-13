@@ -25,11 +25,12 @@
 #include "llworld.h"
 #include "llviewerregion.h"
 #include "llfile.h"
-
 #include "llmath.h"
 #include "llv4math.h"
-
 #include "llfloatertextdump.h"
+
+LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
+LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 
 //Half of this file is copy/pasted from llfloaterexport and the stuff I tacked on sucks. I'm not unshitting it. You've been warned.
 //but, it'll be patched soon, so who cares.
@@ -76,54 +77,30 @@ LLFloaterAttachments::~LLFloaterAttachments()
 
 BOOL LLFloaterAttachments::postBuild(void)
 {
-	if(!mSelection) return TRUE;
-	if(mSelection->getRootObjectCount() < 1) return TRUE;
+ if(!mSelection) return TRUE;
 
-	childSetCommitCallback("attachment_list", onCommitAttachmentList, this);
+ LLViewerObject* foo = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+ LLVOAvatar* avatar = find_avatar_from_object(foo);
 
-	childSetAction("inventory_btn", onClickInventory, this);
-	childSetAction("textures_btn", onClickTextures, this);
-	childSetAction("view_children_btn", onClickViewChildren, this);
+ childSetCommitCallback("attachment_list", onCommitAttachmentList, this);
 
-	LLViewerObject* avatar = NULL;
+ childSetAction("inventory_btn", onClickInventory, this);
+ childSetAction("textures_btn", onClickTextures, this);
+ childSetAction("view_children_btn", onClickViewChildren, this);
 
-	for (LLObjectSelection::valid_root_iterator iter = mSelection->valid_root_begin();
-		 iter != mSelection->valid_root_end(); iter++)
-	{
-		LLSelectNode* nodep = *iter;
-		LLViewerObject* objectp = nodep->getObject();
 
-		LLViewerObject* parentp = objectp->getSubParent();
-		if(parentp)
-		{
-			if(parentp->isAvatar())
-			{
-				// parent is an avatar
-				avatar = parentp;
-				break;
-			}
-		}
+ if(avatar)
+ {
+  std::string av_name;
+  gCacheName->getFullName(avatar->getID(), av_name);
 
-		if(objectp->isAvatar())
-		{
-			avatar = objectp;
-			break;
-		}
+  if(!av_name.empty())
+   setTitle(av_name + " HUDs");
 
-	}
+  selectAgentHudPrims(avatar);
+ }
 
-	if(avatar)
-	{
-		std::string av_name;
-		gCacheName->getFullName(avatar->getID(), av_name);
-
-		if(!av_name.empty())
-			setTitle(av_name + " HUDs");
-
-		selectAgentHudPrims(avatar);
-	}
-
-	return TRUE;
+ return TRUE;
 }
 
 void LLFloaterAttachments::onCommitAttachmentList(LLUICtrl* ctrl, void* user_data)

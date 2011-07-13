@@ -115,6 +115,15 @@
 
 using namespace LLVOAvatarDefines;
 
+// for macs
+#if LL_DARWIN
+size_t strnlen(const char *s, size_t n)
+{
+  const char *p = (const char *)memchr(s, 0, n);
+  return(p ? p-s : n);
+}
+#endif
+
 //-----------------------------------------------------------------------------
 // Global constants
 //-----------------------------------------------------------------------------
@@ -766,17 +775,17 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mAppearanceAnimating(FALSE),
 	mNameString(),
 	mTitle(),
+	mNameAway(false),
+	mNameBusy(false),
+	mNameMute(false),
+	mNameAppearance(false),
 	mRenderedName(),
 	mUsedNameSystem(),
 	mClientName(),
-	mNameAway(FALSE),
-	mNameBusy(FALSE),
-	mNameMute(FALSE),
 	mRenderGroupTitles(sRenderGroupTitles),
 	mNameFromChatOverride(false),
 	mNameFromChatChanged(false),
-	mNameAppearance(FALSE),
-	mRenderTag(FALSE),
+	mRenderTag(false),
 	mLastRegionHandle(0),
 	mRegionCrossingCount(0),
 	mFirstTEMessageReceived( FALSE ),
@@ -1198,8 +1207,7 @@ BOOL LLVOAvatar::areAllNearbyInstancesBaked(S32& grey_avatars)
 // 		{
 // 			return res;  // Assumes sInstances is sorted by pixel area.
 // 		}
-		else
-		if( !inst->isFullyBaked() )
+		else if( !inst->isFullyBaked() )
 		{
 			res = FALSE;
 			if (inst->mHasGrey)
@@ -1256,7 +1264,6 @@ void LLVOAvatar::getMeshInfo (mesh_info_t* mesh_info)
 	}
 	return;
 }
-
 
 // static
 void LLVOAvatar::dumpBakedStatus()
@@ -3347,9 +3354,17 @@ void LLVOAvatar::idleUpdateWindEffect()
 
 bool LLVOAvatar::updateClientTags()
 { 
-	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_list.xml");
+	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_tags_sg1.xml");
 	std::string client_list_url = gSavedSettings.getString("ClientDefinitionsURL");
 	LLSD response = LLHTTPClient::blockingGet(client_list_url);
+	S32 status = response["status"].asInteger();
+	if ((status != 200)) 
+	{
+		llinfos << "Client Tag Update failed (" << status << "): "
+			<< (response["body"].isString()? response["body"].asString(): "<unknown error>")
+			<< llendl;
+		return false;
+	}
 	if(response.has("body"))
 	{
 		const LLSD &client_list = response["body"];

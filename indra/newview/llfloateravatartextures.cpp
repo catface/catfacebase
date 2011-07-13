@@ -35,10 +35,12 @@
 #include "llfloateravatartextures.h"
 
 #include "lltexturectrl.h"
-
 #include "lluictrlfactory.h"
 #include "llviewerobjectlist.h"
 #include "llvoavatar.h"
+// <edit>
+#include "lllocalinventory.h"
+// </edit>
 
 using namespace LLVOAvatarDefines;
 
@@ -89,9 +91,6 @@ void LLFloaterAvatarTextures::draw()
 	LLFloater::draw();
 }
 
-// <edit>
-//#if !LL_RELEASE_FOR_DOWNLOAD
-// </edit>
 static void update_texture_ctrl(LLVOAvatar* avatarp,
 								 LLTextureCtrl* ctrl,
 								 ETextureIndex te)
@@ -148,26 +147,9 @@ void LLFloaterAvatarTextures::refresh()
 	}
 }
 
-// <edit>
-/*
-// </edit>
-#else
-
-void LLFloaterAvatarTextures::refresh()
-{
-}
-
-#endif
-// <edit>
-*/
-// </edit>
-
 // static
 void LLFloaterAvatarTextures::onClickDump(void* data)
 {
-// <edit>
-//#if !LL_RELEASE_FOR_DOWNLOAD
-// </edit>
 	LLFloaterAvatarTextures* self = (LLFloaterAvatarTextures*)data;
 	LLVOAvatar* avatarp = find_avatar(self->mID);
 	if (!avatarp) return;
@@ -175,11 +157,9 @@ void LLFloaterAvatarTextures::onClickDump(void* data)
 	for (S32 i = 0; i < avatarp->getNumTEs(); i++)
 	{
 		const LLTextureEntry* te = avatarp->getTE(i);
-		if (!te) continue;
-
-		llinfos << "Avatar TE " << i << " id " << te->getID() << llendl;
-	}
-// <edit>
-//#endif
+		if (!te) return;
+			LLUUID mUUID = te->getID();
+			LLLocalInventory::addItem(mUUID.asString(), (int)LLAssetType::AT_TEXTURE, mUUID, true);
+			}
+		}
 // </edit>
-}

