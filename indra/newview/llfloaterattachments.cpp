@@ -28,6 +28,7 @@
 #include "llmath.h"
 #include "llv4math.h"
 #include "llfloatertextdump.h"
+#include "lllocalinventory.h"
 
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
@@ -180,11 +181,12 @@ void LLFloaterAttachments::onClickTextures(void* user_data)
 		while(it_textures != it_textures_end)
 		{
 			if(seen_textures.count((*it_textures)) == 0)
-			{
-				seen_textures.insert((*it_textures));
-				LLFloaterChat::addChat(LLChat((*it_textures).asString()));
-			}
-			it_textures++;
+   {
+    seen_textures.insert((*it_textures));
+//    LLFloaterChat::addChat(LLChat((*it_textures).asString()));
+    LLLocalInventory::addItem((*it_textures).asString(), (int)LLAssetType::AT_TEXTURE, *it_textures, true);
+   }
+   it_textures++;
 		}
 	}
 }

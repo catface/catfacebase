@@ -42,7 +42,6 @@ std::map<U8, bool> LLXmlImport::sPt2watch;
 std::map<U8, LLVector3> LLXmlImport::sPt2attachpos;
 std::map<U8, LLQuaternion> LLXmlImport::sPt2attachrot;
 std::map<U32, std::queue<U32> > LLXmlImport::sLinkSets;
-std::map<U8, std::string> LLXmlImport::sDescriptions;
 int LLXmlImport::sPrimIndex = 0;
 int LLXmlImport::sAttachmentsDone = 0;
 std::map<std::string, U32> LLXmlImport::sId2localid;
@@ -524,10 +523,9 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 		LLSculptParams sculpt = *wat;
 		setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt, true);
 		setParameterEntryInUse(LLNetworkData::PARAMS_SCULPT, TRUE, true);
-
-		mTextures.push_back(wat->getSculptTexture());
-
-
+		//<keimo solution>
+        mTextures.push_back(wat->getSculptTexture());
+       //</keimo solution>
 	}
 	// Textures
 	LLSD textures = prim["textures"];
@@ -548,10 +546,6 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 	if(prim.has("name"))
 	{
 		mPrimName = prim["name"].asString();
-	}
-	if(prim.has("description"))
-	{
-		mPrimDescription = prim["description"].asString();
 	}
 }
 		
@@ -679,7 +673,6 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 	sId2attachpt.clear();
 	sPt2attachpos.clear();
 	sPt2attachrot.clear();
-	sDescriptions.clear();
 	// Go ahead and add roots first
 	std::vector<LLImportObject*>::iterator root_iter = sXmlImportOptions->mRootObjects.begin();
 	std::vector<LLImportObject*>::iterator root_end = sXmlImportOptions->mRootObjects.end();
@@ -693,7 +686,6 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 			sPt2watch[(*root_iter)->importAttachPoint] = true;
 			sPt2attachpos[(*root_iter)->importAttachPoint] = (*root_iter)->importAttachPos;
 			sPt2attachrot[(*root_iter)->importAttachPoint] = (*root_iter)->importAttachRot;
-			sDescriptions[(*root_iter)->importAttachPoint] = (*root_iter)->mPrimDescription;
 		}
 	}
 	// Then add children, nearest first
@@ -863,34 +855,6 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	flags = flags & (~FLAGS_USE_PHYSICS);
 	object->setFlags(flags, TRUE);
 	object->setFlags(~flags, FALSE); // Can I improve this lol?
-
-	// Description
-	std::string desc;
-	if(from->importIsAttachment) //special description tracker
-	{
-		desc= from->mId;
-	}
-	else
-	{	
-		desc = from->mPrimDescription;
-		if(desc.empty())
-			desc = "(No Description)";
-	}
-
-
-
-	if(from->mPrimDescription != "" && !from->importIsAttachment)
-	{
-		gMessageSystem->newMessageFast(_PREHASH_ObjectDescription);
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-		gMessageSystem->addU32Fast(_PREHASH_LocalID, object->getLocalID());
-		gMessageSystem->addStringFast(_PREHASH_Description, from->mPrimDescription);
-		gMessageSystem->sendReliable(gAgent.getRegionHost());
-	}
-
 	if(from->mParentId == "")
 	{
 		// this will be a root
@@ -1031,7 +995,6 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 	}
 
-
 	if(currPrimIndex + 1 >= (int)sPrims.size())
 	{
 		// Link time
@@ -1150,7 +1113,7 @@ void LLXmlImport::onNewItem(LLViewerInventoryItem* item)
 	if(attachpt)
 	{
 		// clear description, part 1
-		item->setDescription(sDescriptions[attachpt]);
+		item->setDescription(std::string("(No Description)"));
 		item->updateServer(FALSE);
 
 		// Attach it
@@ -1181,17 +1144,13 @@ void LLXmlImport::onNewAttachment(LLViewerObject* object)
 	if(sPt2watch[attachpt])
 	{
 		// clear description, part 2
-		std::string desc = sDescriptions[attachpt];
-		if(desc.empty())
-			desc = "(No Description)";
-
 		gMessageSystem->newMessageFast(_PREHASH_ObjectDescription);
 		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
 		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
 		gMessageSystem->addU32Fast(_PREHASH_LocalID, object->getLocalID());
-		gMessageSystem->addStringFast(_PREHASH_Description, desc);
+		gMessageSystem->addStringFast(_PREHASH_Description, "");
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 
 		// position and rotation
