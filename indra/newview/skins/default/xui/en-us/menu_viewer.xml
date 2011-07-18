@@ -67,7 +67,7 @@
 		</menu_item_call>
 		<menu_item_separator bottom="-121" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator2" width="243" />
-		<menu_item_call bottom="-140" enabled="true" height="19" label="Save Texture As..." left="0"
+		<menu_item_call bottom="-140" enabled="true" height="19" label="Save Asset As..." left="0"
 		     mouse_opaque="true" name="Save Texture As..." width="243">
 			<on_click function="File.SaveTexture" userdata="" />
 			<on_enable function="File.EnableSaveAs" />
