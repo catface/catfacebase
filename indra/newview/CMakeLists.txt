@@ -394,6 +394,7 @@ set(viewer_SOURCE_FILES
     lltexturestats.cpp
     lltexturestatsuploader.cpp
     lltextureview.cpp
+	#jcfloatertoolbox.cpp
     lltoolbar.cpp
     lltoolbrush.cpp
     lltoolcomp.cpp
@@ -874,6 +875,7 @@ set(viewer_HEADER_FILES
     lltexturestats.h
     lltexturestatsuploader.h
     lltextureview.h
+	#jcfloatertoolbox.h
     lltool.h
     lltoolbar.h
     lltoolbrush.h

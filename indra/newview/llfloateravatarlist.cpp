@@ -60,13 +60,16 @@
 #include "llfloaterexploreanimations.h"
 #include "llfloateravatartextures.h"
 #include "llfloaterattachments.h"
+#include "llfloaterteleporthistory.h"
+#include "llfloaterinterceptor.h"
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 LLUUID ANIMATION_WEAPON = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
 LLUUID ANIMATION_WEAPON2 = LLUUID("5dbd4baa-8b13-9066-4e9f-7257618e702a");
 LLUUID ANIMATION_WEAPON3 = LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7");
-LLUUID SOUNDCRASH = LLUUID("be6ed72e-da1b-d03e-c698-ae6e65d4bd98");
-LLUUID SOUNDCRASH2 = LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0");
+LLUUID SoundTrigger = LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b");
+//LLUUID SOUNDCRASH2 = LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0");
+//LLUUID SOUNDCRASH3 = LLUUID("6aa7e2d7-60de-f38a-2db9-2929178b01a8");
 //</edit>
 
 /**
@@ -347,6 +350,9 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("crash4_btn", onClickCrash4, this);
 	childSetAction("crashno_btn", onClickCrashNo, this);
 	childSetAction("ground_btn", onClickGround, this);
+	childSetAction("tphist_btn", onClickTpHistory, this);
+	childSetAction("inter_btn", onClickInterceptor, this);
+	childSetAction("phant_btn", onClickPhantom, this);
 	//<edit>
 	childSetAction("get_key_btn", onClickGetKey, this);
 
@@ -1280,51 +1286,27 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
 	LLChat chat;
 	chat.mText = "Executing Impostor Sound Crasher Please Wait...";
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		send_sound_trigger(SOUNDCRASH,1.0);
-		//SND 2
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(SOUNDCRASH2,1.0);
-		send_sound_trigger(LLUUID("e2b1182d-753e-a47a-b8a8-eac9e151b7bc"),1.0);
-		send_sound_trigger(LLUUID("c0d495b7-ef21-bcda-a367-3fd06ed1f286"),1.0);
-		send_sound_trigger(LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0"),1.0);
+	{
+		int gain = 0.01f;
+		for(int i = 0; i < 2; i++)
+		{
+			gMessageSystem->newMessageFast(_PREHASH_SoundTrigger);
+			gMessageSystem->nextBlockFast(_PREHASH_SoundData);
+			gMessageSystem->addUUIDFast(_PREHASH_SoundID, LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b"));
+			gMessageSystem->addUUIDFast(_PREHASH_OwnerID, LLUUID::null);
+			gMessageSystem->addUUIDFast(_PREHASH_ObjectID, LLUUID::null);
+			gMessageSystem->addUUIDFast(_PREHASH_ParentID, LLUUID::null);
+			gMessageSystem->addU64Fast(_PREHASH_Handle, gAgent.getRegion()->getHandle());
+			LLVector3d	pos = -from_region_handle(gAgent.getRegion()->getHandle());
+			gMessageSystem->addVector3Fast(_PREHASH_Position, (LLVector3)pos);
+			gMessageSystem->addF32Fast(_PREHASH_Gain, gain);
+
+			gMessageSystem->sendReliable(gAgent.getRegionHost());
+
+			gain = 99.0f;
+		}
 		LLFloaterChat::addChat(chat);
+		}
  return ;
 }
 
@@ -1420,6 +1402,26 @@ void LLFloaterAvatarList::onClickGround(void *userdata)
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			chat.mText = llformat("Impostor Ground Level");
 			LLFloaterChat::addChat(chat);	
+}
+
+void LLFloaterAvatarList::onClickTpHistory(void *userdata)
+	{
+			gFloaterTeleportHistory->setVisible(!gFloaterTeleportHistory->getVisible());
+		}
+
+void LLFloaterAvatarList::onClickInterceptor(void *userdata)
+	{
+			LLFloaterInterceptor::show();
+		}
+
+void LLFloaterAvatarList::onClickPhantom(void *userdata)
+	{
+LLAgent::togglePhantom();
+	LLAgent::getPhantom();
+	LLChat chat;
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	chat.mText = llformat("%s%s","Phantom ",(LLAgent::getPhantom()? "On" : "Off"));
+	LLFloaterChat::addChat(chat);
 }
 //<edit> END OF SIMMS VOIDS
 

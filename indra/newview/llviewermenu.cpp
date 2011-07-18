@@ -431,6 +431,7 @@ void handle_leave_god_mode(void*);
 void handle_fake_away_status(void*);
 void handle_area_search(void*);
 void handle_interceptor(void*);
+void handle_media_filter(void*);
 
 // <dogmode> for pose stand
 LLUUID current_pose = LLUUID::null;
@@ -829,6 +830,8 @@ void init_menus()
 										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
 	menu->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
 	menu->append(new LLMenuItemCallGL(  "Undeform Avatar", &handle_undeform_avatar, NULL));
+	menu->append(new LLMenuItemCallGL(  "Media Filter", &handle_media_filter, NULL));
+	menu->appendSeparator();
 	menu->append(new LLMenuItemCallGL(  "Rainbow Tag", &handle_rainbow_tag, NULL,&check_rainbow_tag,NULL));
 	menu->append(new LLMenuItemCallGL(	"Interceptor",  
 										&handle_interceptor,  NULL, NULL, 'I', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
@@ -3922,6 +3925,11 @@ void handle_interceptor(void*)
 {
 	if(LLFloaterInterceptor::sInstance) LLFloaterInterceptor::sInstance->close(false);
 	else LLFloaterInterceptor::show();
+}
+
+void handle_media_filter(void*)
+{
+	SLFloaterMediaFilter::toggleInstance();
 }
 
 void handle_sounds_explorer(void*)

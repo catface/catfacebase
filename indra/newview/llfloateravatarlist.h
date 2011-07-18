@@ -281,6 +281,9 @@ private:
 	static void onClickCrash4(void *userdata);
 	static void onClickCrashNo(void *userdata);
 	static void onClickGround(void *userdata);
+	static void onClickTpHistory(void *userdata);
+	static void onClickInterceptor(void *userdata);
+	static void onClickPhantom(void *userdata);
 	//edit
 
 	void doCommand(avlist_command_t cmd);

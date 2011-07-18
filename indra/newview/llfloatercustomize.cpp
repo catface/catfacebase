@@ -938,14 +938,18 @@ void LLPanelEditWearable::draw()
 	item = (LLViewerInventoryItem*)gAgent.getWearableInventoryItem(mType);
 	if(item)
 	{
-		const LLPermissions& perm = item->getPermissions();
-		is_modifiable = perm.allowModifyBy(gAgent.getID(), gAgent.getGroupID());
-		is_copyable = perm.allowCopyBy(gAgent.getID(), gAgent.getGroupID());
+		// <edit>
+		//const LLPermissions& perm = item->getPermissions();
+		//is_modifiable = perm.allowModifyBy(gAgent.getID(), gAgent.getGroupID());
+		//is_copyable = perm.allowCopyBy(gAgent.getID(), gAgent.getGroupID());
+		is_modifiable = TRUE;
+		is_copyable = TRUE;
+		// </edit>
 		is_complete = item->isComplete();
 	}
 
-	childSetEnabled("Save", is_modifiable && is_complete && has_wearable && is_dirty);
-	childSetEnabled("Save As", is_copyable && is_complete && has_wearable);
+	childSetEnabled("Save", is_complete && has_wearable && is_dirty);
+	childSetEnabled("Save As", is_complete && has_wearable);
 	childSetEnabled("Revert", has_wearable && is_dirty );
 	childSetEnabled("Take Off",  has_wearable );
 	childSetVisible("Take Off", mCanTakeOff && has_wearable  );
@@ -1015,7 +1019,7 @@ void LLPanelEditWearable::draw()
 
 		hideTextureControls();
 	}
-	else if(has_wearable && is_modifiable)
+	else if(has_wearable)
 	{
 		childSetVisible("title", TRUE);
 		childSetTextArg("title", "[DESC]", wearable->getName() );
@@ -1032,7 +1036,7 @@ void LLPanelEditWearable::draw()
 			std::string name = iter->first;
 			LLTextureCtrl* texture_ctrl = getChild<LLTextureCtrl>(name);
 			S32 te_index = iter->second;
-			childSetVisible(name, is_copyable && is_modifiable && is_complete );
+			childSetVisible(name, is_complete );
 			if (texture_ctrl)
 			{
 				const LLTextureEntry* te = avatar->getTE(te_index);
@@ -1079,8 +1083,8 @@ void LLPanelEditWearable::draw()
 		{
 			std::string name = iter->first;
 			ETextureIndex te = (ETextureIndex)iter->second;
-			childSetVisible(name, is_copyable && is_modifiable && is_complete);
-			childSetEnabled(name, is_copyable && is_modifiable && is_complete);
+			childSetVisible(name, is_complete);
+			childSetEnabled(name, is_complete);
 			LLCheckBoxCtrl* ctrl = getChild<LLCheckBoxCtrl>(name);
 			if (ctrl)
 			{
@@ -1093,8 +1097,8 @@ void LLPanelEditWearable::draw()
 		{
 			std::string name = iter->first;
 			ETextureIndex te = (ETextureIndex)iter->second;
-			childSetVisible(name, is_copyable && is_modifiable && is_complete);
-			childSetEnabled(name, is_copyable && is_modifiable && is_complete);
+			childSetVisible(name, is_complete);
+			childSetEnabled(name, is_complete);
 			LLCheckBoxCtrl* ctrl = getChild<LLCheckBoxCtrl>(name);
 			if (ctrl)
 			{
@@ -1111,7 +1115,7 @@ void LLPanelEditWearable::draw()
 		hideTextureControls();
 	}
 	
-	childSetVisible("icon", has_wearable && is_modifiable);
+	childSetVisible("icon", has_wearable);
 
 	LLPanel::draw();
 }
@@ -1229,22 +1233,22 @@ void LLPanelEditWearable::setUIPermissions(U32 perm_mask, BOOL is_complete)
 	for( std::map<std::string, S32>::iterator iter = mTextureList.begin();
 		 iter != mTextureList.end(); ++iter )
 	{
-		childSetVisible(iter->first, is_copyable && is_modifiable && is_complete );
+		childSetVisible(iter->first, is_copyable && is_complete );
 	}
 	for( std::map<std::string, S32>::iterator iter = mColorList.begin();
 		 iter != mColorList.end(); ++iter )
 	{
-		childSetVisible(iter->first, is_modifiable && is_complete );
+		childSetVisible(iter->first, is_complete );
 	}
 	for (std::map<std::string, S32>::iterator iter = mInvisibilityList.begin();
 		 iter != mInvisibilityList.end(); ++iter)
 	{
-		childSetVisible(iter->first, is_copyable && is_modifiable && is_complete);
+		childSetVisible(iter->first, is_complete);
 	}
 	for (std::map<std::string, S32>::iterator iter = mInvisibilityList.begin();
 		 iter != mInvisibilityList.end(); ++iter)
 	{
-		childSetVisible(iter->first, is_copyable && is_modifiable && is_complete);
+		childSetVisible(iter->first, is_complete);
 	}
 }
 

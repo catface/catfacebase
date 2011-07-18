@@ -29,7 +29,7 @@
     <key>Type</key>
     <string>Boolean</string>
     <key>Value</key>
-    <integer>0</integer>
+    <integer>1</integer>
   </map>
   <key>MediaFilterRect</key>
   <map>
@@ -207,7 +207,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <integer>0.8</integer>
+      <integer>1.2</integer>
   </map>
 	<key>ClientDefinitionsURL</key>
   <map>
@@ -218,7 +218,7 @@
     <key>Type</key>
     <string>String</string>
     <key>Value</key>
-	<string>http://viewertags.com/app/client_list_deprecated.xml</string>
+	<string>http://viewertags.com/app/client_list.xml</string>
   </map>
 
   <key>LastSelectedGrid</key>
@@ -9672,7 +9672,7 @@
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>6</integer>
+      <integer>8</integer>
     </map>
     <key>SpecifiedVersionBuild</key>
     <map>
@@ -9958,7 +9958,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     <key>RenderVBOMappingDisable</key>
     <map>
@@ -13136,7 +13136,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>Ascent Viewer Release</string>
+      <string>Singularity</string>
     </map>
     <key>VertexShaderEnable</key>
     <map>

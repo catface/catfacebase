@@ -21,11 +21,11 @@
 		<panel border="true" bottom_delta="-180" follows="left|top|right|bottom" height="255"
 		       label="Avatar" left="3" mouse_opaque="true"
 		     name="actions_tab" width="295">
-			<!-- first row -->
+			<!-- upper row -->
 			<button
-			       name="profile_btn"
-			       label="Profile"
-			       tool_tip="Show picture, groups, and other information"
+			       name="focus_btn"
+			       label="Zoom"
+			       tool_tip="Zoom in on selected avatar"
 			       left="2"
 			       bottom_delta="-140"
 			       width="68"
@@ -34,9 +34,9 @@
 			       follows="bottom|left"
 			       />
 			<button
-			       name="track_btn"
-			       label="(Un)Track"
-			       tool_tip="Toggle tracking of this avatar's position"
+			       name="prev_in_list_btn"
+			       label="Previous"
+			       tool_tip="Focus camera on previous avatar in list"
 			       left_delta="72"
 			       bottom_delta="0"
 			       width="68"
@@ -45,9 +45,43 @@
 			       follows="bottom|left"
 			       />
 			<button
-			       name="get_key_btn"
-			       label="Get Key"
-			       tool_tip="Copies avatar's key to the clipboard"
+			       name="next_in_list_btn"
+			       label="Next"
+			       tool_tip="Focus camera on next avatar in list"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="huds_btn"
+			       label="AV Huds"
+			       tool_tip="Inspect Selected Avatar's Worn Huds"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<!-- upper middle row -->
+			<button
+			       name="profile_btn"
+			       label="Profile"
+			       tool_tip="Shows Information On Secected Avatar"
+			       left="2"
+			       bottom_delta="-22"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="teleport_btn"
+			       label="TP to"
+			       tool_tip="Teleport to avatar's position"
 			       left_delta="72"
 			       bottom_delta="0"
 			       width="68"
@@ -66,7 +100,18 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-			<!-- second row -->
+			<button
+			       name="inter_btn"
+			       label="Intercept"
+			       tool_tip="Opens Impostor Object Interceptor"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<!-- lower middle row-->
 			<button
 			       name="im_btn"
 			       label="IM"
@@ -90,17 +135,6 @@
 			       follows="bottom|left"
 			       />
 			<button
-			       name="teleport_btn"
-			       label="TP to"
-			       tool_tip="Teleport to avatar's position"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
 			       name="anims_btn"
 			       label="AV Anims"
 			       tool_tip="Rip the selected avatars animations"
@@ -111,12 +145,23 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-			<!-- third row-->
+			<button
+			       name="crash_btn"
+			       label="(S) Crash"
+			       tool_tip="Executes The Impostor Sound Crasher"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<!-- lower row-->
 			<button
 			       name="mark_btn"
-			       label="(Un)Mark"
-			       tool_tip="(Un)Mark this avatar in the list"
-			       left="2"
+			       label="Mark"
+			       tool_tip="Mark/UnMark this avatar in the list"
+			       left="3"
 			       bottom_delta="-22"
 			       width="68"
 			       height="20"
@@ -146,6 +191,40 @@
 			       follows="bottom|left"
 			       />
 			<button
+			       name="follow_btn"
+			       label="Crash(A)"
+			       tool_tip="Executes The Impostor Animation Crash Loop"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+      <!-- lowest row-->
+      <button
+			       name="track_btn"
+			       label="Track"
+			       tool_tip="Toggle tracking of this avatar's position"
+			       left="3"
+			       bottom_delta="-22"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+      <button
+			       name="tphist_btn"
+			       label="TP Hist"
+			       tool_tip="Opens Your Teleport History"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+      <button
 					name="export_dude_btn"
 					label="AV Export"
 					tool_tip="Export the selected avatar in list"
@@ -156,89 +235,10 @@
 					font="SansSerifSmall"
 					follows="bottom|left"
 			       />
-			<!-- fourth row-->
-			<button
-			       name="huds_btn"
-			       label="AV Huds"
-			       tool_tip="Shows Selected Avatars Worn Huds"
-			       left="3"
-			       bottom_delta="-22"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="prev_in_list_btn"
-			       label="Previous"
-			       tool_tip="Focus camera on previous avatar in list"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="next_in_list_btn"
-			       label="Next"
-			       tool_tip="Focus camera on next avatar in list"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="follow_btn"
-			       label="(A) Crash"
-			       tool_tip="Executes Impostor Animation Crasher"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-      <!-- fifth row-->
-      <button
-			       name="focus_btn"
-			       label="Zoom in"
-			       tool_tip="Zooms in camera on this avatar in the list"
-			       left="3"
-			       bottom_delta="-22"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-      <button
-			       name="ground_btn"
-			       label="TP Ground"
-			       tool_tip="Moves Avatar To Ground Level"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-      <button
-			       name="crash_btn"
-			       label="(S) Crash"
-			       tool_tip="Executes Impostor Sound Crasher"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
       <button
 					name="crashno_btn"
 					label="NoCrash"
-					tool_tip="Stops Crashing Avatars"
+					tool_tip="Kills The Impostor (A)Crash loop"
 					left_delta="72"
 					bottom_delta="0"
 					width="68"
@@ -248,9 +248,9 @@
 			       />
       <!-- bottom row-->
       <button
-			       name="focus_btn"
-			       label="Zoom in"
-			       tool_tip="Zooms in camera on this avatar in the list"
+			       name="get_key_btn"
+			       label="UUID"
+			       tool_tip="Copies The Selected Avatars UUID Key"
 			       left="3"
 			       bottom_delta="-22"
 			       width="68"
@@ -270,9 +270,9 @@
 			       follows="bottom|left"
 			       />
       <button
-			       name="crash_btn"
-			       label="(S) Crash"
-			       tool_tip="Executes Impostor Sound Crasher"
+			       name="phant_btn"
+			       label="Phantom"
+			       tool_tip="Toggles your avatar's Phantom State"
 			       left_delta="72"
 			       bottom_delta="0"
 			       width="68"
@@ -290,14 +290,14 @@
 					height="20"
 					font="SansSerifSmall"
 					follows="bottom|left"
-			       />
+			       />      
 		</panel>
 
-		<panel border="true" bottom_delta="-150" follows="left|top|right|bottom" height="255"
+		<panel border="true" bottom_delta="-159" follows="left|top|right|bottom" height="255"
 		       label="Alerts" left="1" mouse_opaque="true"
 		       name="alerts_tab" width="295">
 			<check_box height="16" label="Display alerts in chat"
-				   left="10" bottom_delta="-176" name="radar_alerts" 
+				   left="10" bottom_delta="-156" name="radar_alerts" 
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false" 
@@ -337,7 +337,7 @@
 				   tool_tip="Report avatars getting within or beyond the chat range" />
 		</panel>
 
-		<panel border="true" bottom_delta="-130" follows="left|top|right|bottom" height="255"
+		<panel border="true" bottom_delta="-159" follows="left|top|right|bottom" height="255"
 		       label="Admin" left="1" mouse_opaque="true"
 		       name="land_tab" width="295">
 			
@@ -401,7 +401,7 @@
 			       />
 		</panel>
 
-		<panel border="true" bottom_delta="-150" follows="left|top|right|bottom" height="255"
+		<panel border="true" bottom_delta="-159" follows="left|top|right|bottom" height="255"
 		       label="Options" left="1" mouse_opaque="true"
 		       name="options_tab" width="295">
 			<check_box height="16" label="Update"
