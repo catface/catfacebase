@@ -95,6 +95,7 @@ void LLFloaterHardwareSettings::refreshEnabledState()
 	childSetMinValue("GrapicsCardTextureMemory", min_tex_mem);
 	childSetMaxValue("GrapicsCardTextureMemory", max_tex_mem);
 
+	mLastVBOState = LLVertexBuffer::sEnableVBOs;
 	if (!LLFeatureManager::getInstance()->isFeatureAvailable("RenderVBOEnable") ||
 		!gGLManager.mHasVertexBufferObject)
 	{
@@ -156,6 +157,13 @@ void LLFloaterHardwareSettings::onClose(bool app_quitting)
 	}
 }
 
+// virtual
+void LLFloaterHardwareSettings::draw()
+{
+	if(mLastVBOState == !LLVertexBuffer::sEnableVBOs)
+		refreshEnabledState();
+	LLFloater::draw();
+}
 
 //============================================================================
 
