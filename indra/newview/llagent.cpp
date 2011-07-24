@@ -7306,7 +7306,7 @@ void LLAgent::createStandardWearables(BOOL female)
 		TRUE,  //WT_UNDERPANTS
 		FALSE, //WT_SKIRT
 		FALSE, //WT_ALPHA
-		FALSE  //WT_TATTOO
+		FALSE, //WT_TATTOO
 	};
 
 	for( S32 i=0; i < WT_COUNT; i++ )

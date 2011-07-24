@@ -210,6 +210,10 @@ LLFilePicker::ESaveFilter LLInventoryBackup::getSaveFilter(LLInventoryItem* item
 			return LLFilePicker::FFSAVE_UNDERPANTS;
 		case WT_UNDERSHIRT:
 			return LLFilePicker::FFSAVE_UNDERSHIRT;
+		case WT_TATTOO:
+			return LLFilePicker::FFSAVE_TATTOO;
+		case WT_ALPHA:
+			return LLFilePicker::FFSAVE_ALPHA;
 		default:
 			return LLFilePicker::FFSAVE_ALL;
 		}

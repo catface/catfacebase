@@ -142,6 +142,8 @@ public:
 		FFSAVE_LANDMARK = 34,
 		FFSAVE_AO = 35,
 		FFSAVE_BLACKLIST = 36,
+		FFSAVE_TATTOO = 37,
+		FFSAVE_ALPHA = 38,
 		// </edit>
 	};
 

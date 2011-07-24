@@ -36,6 +36,7 @@
 
 // Library includes
 #include "lluictrlfactory.h"
+#include "llspinctrl.h"
 
 // Viewer includes
 #include "lljoystickbutton.h"
@@ -49,7 +50,7 @@ const F32 CAMERA_BUTTON_DELAY = 0.0f;
 //
 
 LLFloaterCamera::LLFloaterCamera(const LLSD& val)
-:	LLFloater("camera floater") // uses "FloaterCameraRect3"
+:	LLFloater("camera floater") // uses "FloaterCameraRect3a"
 {
 	setIsChrome(TRUE);
 	
@@ -59,7 +60,7 @@ LLFloaterCamera::LLFloaterCamera(const LLSD& val)
 	
 	S32 top = getRect().getHeight();
 	S32 bottom = 0;
-	S32 left = 16;
+	S32 left = 4;
 	
 	const S32 ROTATE_WIDTH = 64;
 	mRotate = new LLJoystickCameraRotate(std::string("cam rotate stick"), 
@@ -99,6 +100,7 @@ LLFloaterCamera::LLFloaterCamera(const LLSD& val)
 	mTrack->setToolTip( getString("move_tooltip") );
 	mTrack->setSoundFlags(MOUSE_DOWN | MOUSE_UP);
 	addChild(mTrack);
+	getChild<LLSpinCtrl>("draw_distance")->setToolTip(getString("draw_distance_tooltip"));
 }
 
 // virtual

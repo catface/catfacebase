@@ -104,7 +104,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 		fp.close();
 		apr_file.close();
 	}
-	else if (exten == "animatn")
+	else if (exten == "anim" || exten == "animatn" || exten == "neil")
 	{
 		asset_type = LLAssetType::AT_ANIMATION;
 		if(!copyFile(src_filename, filename))
@@ -136,7 +136,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 			return LLAssetType::AT_NONE;
 		}
 	}
-	else if(exten == "lsl")
+	else if(exten == "lsl" || exten == "txt" || exten == "lso")
 	{
 		asset_type = LLAssetType::AT_LSL_TEXT;
 		if(!copyFile(src_filename, filename))
@@ -144,7 +144,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 			return LLAssetType::AT_NONE;
 		}
 	}
-	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing")
+	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing" || exten == "tattoo" || exten == "alpha")
 	{
 		asset_type = LLAssetType::AT_CLOTHING;
 		if(!copyFile(src_filename, filename))

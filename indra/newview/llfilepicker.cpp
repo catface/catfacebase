@@ -56,7 +56,7 @@ LLFilePicker LLFilePicker::sInstance;
 #define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png; *.jp2; *.j2k; *.j2c)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png;*.jp2;*.j2k;*.j2c\0"
 #define INVGZ_FILTER L"Inv cache (*.inv; *.inv.gz)\0*.inv;*.inv.gz\0"
 #define BLACKLIST_FILTER L"Asset Blacklist (*.blacklist)\0*.blacklist\0"
-#define WEAR_FILTER L"Wearable (*.xml; *.shape; *.skin; *.hair; *.eyes; *.shirt; *.pants; *.shoes; *.socks ; *.jacket; *.gloves; *.undershirt; *.underpants; *.skirt)\0*.xml;*.shape;*.skin;*.hair;*.eyes;*.shirt;*.pants;*.shoes;*.socks ;*.jacket;*.gloves;*.undershirt;*.underpants;*.skirt)\0"
+#define WEAR_FILTER L"Wearable (*.xml; *.shape; *.skin; *.hair; *.eyes; *.shirt; *.pants; *.shoes; *.socks ; *.jacket; *.gloves; *.undershirt; *.underpants; *.skirt; *.tattoo; *.alpha)\0*.xml;*.shape;*.skin;*.hair;*.eyes;*.shirt;*.pants;*.shoes;*.socks ;*.jacket;*.gloves;*.undershirt;*.underpants;*.skirt;*.tattoo;*.alpha)\0"
 #define GEST_FILTER L"Gesture (*.xml; *.gesture)\0*.xml;*.gesture\0"
 // <edit/>
 #define ANIM_FILTER L"Animations (*.bvh; *.anim; *.animatn; *.neil)\0*.bvh;*.anim;*.animatn;*.neil\0"
@@ -661,6 +661,26 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 		mOFN.lpstrDefExt = L"skirt";
 		mOFN.lpstrFilter =
 			L"Skirts (*.skirt)\0*.skirt\0" \
+			L"\0";
+		break;
+		case FFSAVE_TATTOO:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.tattoo", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"tattoo";
+		mOFN.lpstrFilter =
+			L"Tattoos (*.tattoo)\0*.tattoo\0" \
+			L"\0";
+		break;
+		case FFSAVE_ALPHA:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.alpha", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"alpha";
+		mOFN.lpstrFilter =
+			L"Tattoos (*.alpha)\0*.alpha\0" \
 			L"\0";
 		break;
 	case FFSAVE_LANDMARK:

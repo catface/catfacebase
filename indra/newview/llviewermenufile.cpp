@@ -120,7 +120,7 @@ static std::string SOUND_EXTENSIONS = "wav";
 static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
 static std::string ANIM_EXTENSIONS =  "bvh anim animatn neil";
 //<edit>
-static std::string WEAR_EXTENSIONS =  "xml shape skin hair eyes shirt pants shoes socks jacket gloves undershirt underpants skirt";
+static std::string WEAR_EXTENSIONS =  "xml shape skin hair eyes shirt pants shoes socks jacket gloves undershirt underpants skirt tattoo alpha";
 static std::string GEST_EXTENSIONS =  "xml gesture";
 //</edit>
 #ifdef _CORY_TESTING
@@ -1045,12 +1045,12 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		asset_type = LLAssetType::AT_NOTECARD;
 		filename = src_filename;
 	}
-	else if(exten == "lsl")
+	else if(exten == "lsl" || exten == "txt" || exten == "lso")
 	{
 		asset_type = LLAssetType::AT_LSL_TEXT;
 		filename = src_filename;
 	}
-	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing")
+	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "tattoo" || exten == "alpha" || exten == "undershirt" || exten == "bodypart" || exten == "clothing")
 	{
 		asset_type = LLAssetType::AT_CLOTHING;
 		filename = src_filename;
@@ -1102,7 +1102,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			t_disp_name = src_filename;
 		}
 		// <edit> hack to create scripts and gestures
-		if(exten == "lsl" || exten == "gesture" || exten == "notecard") // added notecard Oct 15 2009
+		if(exten == "lsl" || exten == "gesture" || exten == "notecard" || exten == "txt" || exten == "lso") // added notecard Oct 15 2009
 		{
 			LLInventoryType::EType inv_type = LLInventoryType::IT_GESTURE;
 			if(exten == "lsl") inv_type = LLInventoryType::IT_LSL;

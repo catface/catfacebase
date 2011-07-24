@@ -41,5 +41,7 @@
   <texture_picker bottom_delta="-110" height="111" label="Skirt Baked" left="4" name="skirt-baked" width="96" />
   <texture_picker bottom_delta="0" height="111" label="Skirt" left_delta="99" name="skirt" width="96" />
   <texture_picker bottom_delta="0" height="111" label="Shoes" left_delta="99" name="shoes" width="96" />
-
+  <texture_picker bottom_delta="0" height="111" label="Head Alpha" left_delta="99" name="head_alpha" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Upper Alpha" left_delta="99" name="upper_alpha" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Lower Alpha" left_delta="99" name="lower_alpha" width="96" />
 </floater>

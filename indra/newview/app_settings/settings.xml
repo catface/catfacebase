@@ -494,7 +494,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>54.0</real>
+      <real>100.0</real>
     </map>
     <key>EmeraldBoobHardness</key>
     <map>
@@ -505,7 +505,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>51</real>
+      <real>1</real>
     </map>
     <key>EmeraldBreastPhysicsToggle</key>
     <map>
@@ -538,7 +538,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>64</real>
+      <real>100</real>
     </map>
     <key>EmeraldBoobFriction</key>
     <map>
@@ -549,7 +549,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>80</real>
+      <real>100</real>
     </map>
     <key>EmeraldBoobVelMin</key>
     <map>
@@ -560,7 +560,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>24</real>
+      <real>1</real>
     </map>
     <key>EmeraldBoobXYInfluence</key>
     <map>
@@ -713,7 +713,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>dark</string>
+      <string>sapphire</string>
 	  <key>IsCOA</key>
 	  <integer>1</integer>
     </map>
@@ -2742,7 +2742,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
     <key>CloseSnapshotOnKeep</key>
     <map>
@@ -5017,7 +5017,7 @@
         <integer>0</integer>
       </array>
     </map>
-    <key>FloaterCameraRect3</key>
+    <key>FloaterCameraRect3a</key>
     <map>
       <key>Comment</key>
       <string>Rectangle for camera control window</string>
@@ -5029,7 +5029,7 @@
       <array>
         <integer>0</integer>
         <integer>64</integer>
-        <integer>176</integer>
+	<integer>200</integer>
         <integer>0</integer>
       </array>
     </map>
@@ -10931,7 +10931,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
     <key>ShowNearClip</key>
     <map>
@@ -11030,7 +11030,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
     <key>ShowStartLocation</key>
     <map>

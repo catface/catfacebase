@@ -1826,7 +1826,7 @@ void LLViewerWindow::adjustRectanglesForFirstUse(const LLRect& window)
 	// confused. JC
 	adjust_rect_bottom_center("FloaterMoveRect2", window);
 
-	adjust_rect_top_center("FloaterCameraRect3", window);
+	adjust_rect_top_center("FloaterCameraRect3a", window);
 
 	adjust_rect_top_left("FloaterCustomizeAppearanceRect", window);
 
@@ -1891,7 +1891,7 @@ void LLViewerWindow::adjustRectanglesForFirstUse(const LLRect& window)
 void LLViewerWindow::adjustControlRectanglesForFirstUse(const LLRect& window)
 {
 	adjust_rect_bottom_center("FloaterMoveRect2", window);
-	adjust_rect_top_center("FloaterCameraRect3", window);
+	adjust_rect_top_center("FloaterCameraRect3a", window);
 }
 
 void LLViewerWindow::initWorldUI()
