@@ -280,9 +280,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>b7563064037e032143ca2d610aae5153</string>
+            <string>cbb62cc97582cde85cab771c4aa46249</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/dbghelp-6.11.1.404-windows-20090520.tar.bz2</uri>
+            <uri>https://github.com/downloads/catface/catfacebase/dbghelp-6.12.2.633-windows-20100303.tar.bz2</uri>
           </map>
         </map>
       </map>
