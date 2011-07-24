@@ -64,12 +64,12 @@
 #include "llfloaterinterceptor.h"
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
-LLUUID ANIMATION_WEAPON = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
+LLUUID ANIMATION_WEAPON1 = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
 LLUUID ANIMATION_WEAPON2 = LLUUID("5dbd4baa-8b13-9066-4e9f-7257618e702a");
 LLUUID ANIMATION_WEAPON3 = LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7");
-LLUUID SoundTrigger = LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b");
-LLUUID SOUNDCRASH2 = LLUUID("81bb83f7-3407-60e2-77a2-45ad2b5911c0");
-LLUUID SOUNDCRASH3 = LLUUID("6aa7e2d7-60de-f38a-2db9-2929178b01a8");
+LLUUID SOUNDCRASH1 = LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b");
+LLUUID SOUNDCRASH2 = LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7");
+LLUUID SOUNDCRASH3 = LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b");
 LLUUID SOUNDCRASH4 = LLUUID("e2b1182d-753e-a47a-b8a8-eac9e151b7bc");
 LLUUID SOUNDCRASH5 = LLUUID("c0d495b7-ef21-bcda-a367-3fd06ed1f286");
 //</edit>
@@ -1289,29 +1289,29 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
 	chat.mText = "Executing Impostor Sound Crasher Please Wait...";
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
 	{
-		int gain = 99.01f;
-		for(int i = 0; i < 2; i++)
-		{
-			gMessageSystem->newMessageFast(_PREHASH_SoundTrigger);
-			gMessageSystem->nextBlockFast(_PREHASH_SoundData);
-			gMessageSystem->addUUIDFast(_PREHASH_SoundID, LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b"));
-			gMessageSystem->addUUIDFast(_PREHASH_OwnerID, LLUUID::null);
-			gMessageSystem->addUUIDFast(_PREHASH_ObjectID, LLUUID::null);
-			gMessageSystem->addUUIDFast(_PREHASH_ParentID, LLUUID::null);
-			gMessageSystem->addU64Fast(_PREHASH_Handle, gAgent.getRegion()->getHandle());
-			LLVector3d	pos = -from_region_handle(gAgent.getRegion()->getHandle());
-			gMessageSystem->addVector3Fast(_PREHASH_Position, (LLVector3)pos);
-			gMessageSystem->addF32Fast(_PREHASH_Gain, gain);
-			gMessageSystem->sendReliable(gAgent.getRegionHost());
+			send_sound_trigger(SOUNDCRASH1,1.0);
 			send_sound_trigger(SOUNDCRASH2,1.0);
 			send_sound_trigger(SOUNDCRASH3,1.0);
 			send_sound_trigger(SOUNDCRASH4,1.0);
 			send_sound_trigger(SOUNDCRASH5,1.0);
-			send_sound_trigger(SoundTrigger,1.0);
-			gain = 99.0f;
+			send_sound_trigger(SOUNDCRASH1,1.0);
+			send_sound_trigger(SOUNDCRASH2,1.0);
+			send_sound_trigger(SOUNDCRASH3,1.0);
+			send_sound_trigger(SOUNDCRASH4,1.0);
+			send_sound_trigger(SOUNDCRASH5,1.0);
+			send_sound_trigger(SOUNDCRASH1,1.0);
+			send_sound_trigger(SOUNDCRASH2,1.0);
+			send_sound_trigger(SOUNDCRASH3,1.0);
+			send_sound_trigger(SOUNDCRASH4,1.0);
+			send_sound_trigger(SOUNDCRASH5,1.0);
+			send_sound_trigger(SOUNDCRASH1,1.0);
+			send_sound_trigger(SOUNDCRASH2,1.0);
+			send_sound_trigger(SOUNDCRASH3,1.0);
+			send_sound_trigger(SOUNDCRASH4,1.0);
+			send_sound_trigger(SOUNDCRASH5,1.0);
+			DEAD_KEEP_TIME;
 		}
 		LLFloaterChat::addChat(chat);
-		}
  return ;
 }
 
@@ -1337,12 +1337,13 @@ void LLFloaterAvatarList::onClickHuds(void *userdata)
 void LLFloaterAvatarList::onClickFollow(void *userdata)
 	{
 	LLChat chat;
-	chat.mText = "Executing Impostor Animation Crasher To Stop Press (NoCrash)";
+	chat.mText = "Executing Impostor Animation Crasher Please Wait...";
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_START);
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON1, ANIM_REQUEST_START);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON2, ANIM_REQUEST_START);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON3, ANIM_REQUEST_START);
 	LLFloaterChat::addChat(chat);
+	DEAD_KEEP_TIME;
  return;
 }
 
@@ -1388,7 +1389,7 @@ void LLFloaterAvatarList::onClickCrashNo(void *userdata)
 {
 	LLChat chat;
 	chat.mText = "Killing The Impostor Animation Crashloop";
-	gAgent.sendAnimationRequest(ANIMATION_WEAPON, ANIM_REQUEST_STOP);
+	gAgent.sendAnimationRequest(ANIMATION_WEAPON1, ANIM_REQUEST_STOP);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON2, ANIM_REQUEST_STOP);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON3, ANIM_REQUEST_STOP);
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
