@@ -106,9 +106,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>f0b52a60b90b25276807f89cc7612f5e</string>
+            <string>a02619c1e30a3db02d3883bf1ad7a1e6</string>
             <key>url</key>
-            <uri>https://github.com/downloads/catface/catfacebase/apr_suite-1.4.2-windows-20110217.tar.bz2</uri>
+            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/apr_suite-1.3.8-windows-20090911.tar.bz2</uri>
           </map>
         </map>
       </map>

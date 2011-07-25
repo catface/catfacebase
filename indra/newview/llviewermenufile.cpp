@@ -116,7 +116,7 @@ class LLFileEnableUpload : public view_listener_t
 //============================================================================
 
 #if LL_WINDOWS
-static std::string SOUND_EXTENSIONS = "wav";
+static std::string SOUND_EXTENSIONS = "wav ogg";
 static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
 static std::string ANIM_EXTENSIONS =  "bvh anim animatn neil";
 //<edit>
@@ -171,12 +171,6 @@ std::string build_extensions_string(LLFilePicker::ELoadFilter filter)
    to upload for a particular task.  If the file is valid for the given action,
    returns the string to the full path filename, else returns NULL.
    Data is the load filter for the type of file as defined in LLFilePicker.
-
-	Eventually I'd really like to have a built-in browser that gave you all 
-	valid filetypes, default permissions, "Temp when available", and a single 
-	upload button. Maybe let it show the contents of multiple folders. The main 
-	purpose of this features is to deal with the problem of SL just up and 
-	disconnecting if you take more than like 30 seconds to look for a file. -HgB
 **/
 const std::string upload_pick(void* data)
 {
@@ -268,7 +262,9 @@ const std::string upload_pick(void* data)
 	
 	//now we check to see
 	//if the file is actually a valid image/sound/etc.
-	//Consider completely disabling this, see how SL handles it. Maybe we can get full song uploads again! -HgB
+	// <edit> Screw their checks
+	/*
+	// </edit>
 	if (type == LLFilePicker::FFLOAD_WAV)
 	{
 		// pre-qualify wavs to make sure the format is acceptable
@@ -282,7 +278,11 @@ const std::string upload_pick(void* data)
 			return std::string();
 		}
 	}//end if a wave/sound file
+	// <edit>
+	*/
+	// </edit>
 
+	
 	return filename;
 }
 
@@ -400,44 +400,7 @@ class LLFileUploadBulk : public view_listener_t
 			msg.append(llformat("\nWARNING: Each upload costs L$%d if it's not temporary.",expected_upload_cost));
 		args["MESSAGE"] = msg;
 		LLNotifications::instance().add("GenericAlertYesNoCancel", args, LLSD(), onConfirmBulkUploadTemp);
-		/* moved to the callback for the above
-		LLFilePicker& picker = LLFilePicker::instance();
-		if (picker.getMultipleOpenFiles())
-		{
-			// <edit>
-			
-			//const std::string& filename = picker.getFirstFile();
-			std::string filename;
-			while(!(filename = picker.getNextFile()).empty())
-			{
-			// </edit>
-			std::string name = gDirUtilp->getBaseFileName(filename, true);
-			
-			std::string asset_name = name;
-			LLStringUtil::replaceNonstandardASCII( asset_name, '?' );
-			LLStringUtil::replaceChar(asset_name, '|', '?');
-			LLStringUtil::stripNonprintable(asset_name);
-			LLStringUtil::trim(asset_name);
-			
-			std::string display_name = LLStringUtil::null;
-			LLAssetStorage::LLStoreAssetCallback callback = NULL;
-			S32 expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
-			void *userdata = NULL;
-			upload_new_resource(filename, asset_name, asset_name, 0, LLAssetType::AT_NONE, LLInventoryType::IT_NONE,
-				LLFloaterPerms::getNextOwnerPerms(), LLFloaterPerms::getGroupPerms(), LLFloaterPerms::getEveryonePerms(),
-					    display_name,
-					    callback, expected_upload_cost, userdata);
 
-			// *NOTE: Ew, we don't iterate over the file list here,
-			// we handle the next files in upload_done_callback()
-			// </edit> not anymore!
-			}
-		}
-		else
-		{
-			llinfos << "Couldn't import objects from file" << llendl;
-		}
-		*/
 		return true;
 	}
 };
@@ -458,7 +421,7 @@ class LLFileImportXML : public view_listener_t
 	}
 };
 
-class LLFileImportWear : public view_listener_t
+class LLFileImportWearable : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
@@ -490,6 +453,31 @@ class LLFileImportGesture : public view_listener_t
 };
 
 class LLFileEnableImportXML : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool new_value = !LLXmlImport::sImportInProgress;
+
+		// horrendously opaque, this code
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};
+// </edit>
+
+class LLFileEnableImportGesture : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool new_value = !LLXmlImport::sImportInProgress;
+
+		// horrendously opaque, this code
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};
+
+class LLFileEnableImportWearable : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
@@ -1045,7 +1033,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		asset_type = LLAssetType::AT_NOTECARD;
 		filename = src_filename;
 	}
-	else if(exten == "lsl" || exten == "txt" || exten == "lso")
+	else if(exten == "lsl" || exten == "txt" || exten == "lso" | exten == "rtf")
 	{
 		asset_type = LLAssetType::AT_LSL_TEXT;
 		filename = src_filename;
@@ -1102,7 +1090,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			t_disp_name = src_filename;
 		}
 		// <edit> hack to create scripts and gestures
-		if(exten == "lsl" || exten == "gesture" || exten == "notecard" || exten == "txt" || exten == "lso") // added notecard Oct 15 2009
+		if(exten == "lsl" || exten == "gesture" || exten == "notecard" || exten == "txt" || exten == "rtf" || exten == "lso")
 		{
 			LLInventoryType::EType inv_type = LLInventoryType::IT_GESTURE;
 			if(exten == "lsl") inv_type = LLInventoryType::IT_LSL;
@@ -1458,11 +1446,12 @@ void init_menu_file()
 	(new LLFileUploadAnim())->registerListener(gMenuHolder, "File.UploadAnim");
 	(new LLFileUploadBulk())->registerListener(gMenuHolder, "File.UploadBulk");
 	// <edit>
+	(new LLFileImportWearable())->registerListener(gMenuHolder, "File.ImportWearable");
+	(new LLFileImportGesture())->registerListener(gMenuHolder, "File.ImportGesture");
 	(new LLFileImportXML())->registerListener(gMenuHolder, "File.ImportXML");
 	(new LLFileEnableImportXML())->registerListener(gMenuHolder, "File.EnableImportXML");
-	(new LLFileImportWear())->registerListener(gMenuHolder, "File.ImportWear");
-	(new LLFileImportGesture())->registerListener(gMenuHolder, "File.ImportGesture");
-
+	(new LLFileEnableImportGesture())->registerListener(gMenuHolder, "File.EnableImportGesture");
+	(new LLFileEnableImportWearable())->registerListener(gMenuHolder, "File.EnableImportWearable");
 	// </edit>
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");
 	(new LLFileCloseAllWindows())->registerListener(gMenuHolder, "File.CloseAllWindows");
@@ -1476,7 +1465,6 @@ void init_menu_file()
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
-	//Emerald has a second llFileSaveTexture here... Same as the original. Odd. -HgB
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }

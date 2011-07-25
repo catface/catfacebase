@@ -758,7 +758,7 @@ Command-options for "configure":
   -DLL_TESTS:BOOL=OFF      Don't generate unit test projects
   -DEXAMPLEPLUGIN:BOOL=OFF Don't generate example plugin project
   -VISTA_ICON:BOOL=ON      Allow pre-2008 VS to use vista-optimized resource file. (Requires updated rcdll.dll!)
-
+  -DUSE_KDU:BOOL=ON        Use Kdu For Image Decoding Simms
 Examples:
   Set up a viewer-only project for your system:
     develop.py configure -DSERVER:BOOL=OFF
@@ -773,7 +773,7 @@ def main(arguments):
         opts, args = getopt.getopt(
             arguments,
             '?hNt:p:G:m:',
-            ['help', 'standalone', 'no-distcc', 'unattended', 'type=', 'incredibuild', 'generator=', 'project='])
+            ['help', 'standalone', 'no-distcc', 'unattended', 'universal', 'type=', 'incredibuild', 'generator=', 'project='])
     except getopt.GetoptError, err:
         print >> sys.stderr, 'Error:', err
         print >> sys.stderr, """
@@ -790,6 +790,8 @@ For example: develop.py configure -DSERVER:BOOL=OFF"""
             setup.standalone = 'ON'
         elif o in ('--unattended',):
             setup.unattended = 'ON'
+        elif o in ('--universal',):
+            setup.universal = 'ON'
         elif o in ('-m',):
             if a in ('32', '64'):
                 setup.word_size = int(a)
