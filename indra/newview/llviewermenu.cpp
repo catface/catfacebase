@@ -505,7 +505,7 @@ void handle_force_ground_sit(void*);
 void handle_phantom_avatar(void*);
 bool check_phantom_avatar(void*);
 void handle_rainbow_tag(void*);
-bool check_rainbow_tag(void*);
+BOOL check_rainbow_tag(void*);
 void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
@@ -832,7 +832,7 @@ void init_menus()
 	menu->append(new LLMenuItemCallGL(  "Undeform Avatar", &handle_undeform_avatar, NULL));
 	menu->append(new LLMenuItemCallGL(  "Media Filter", &handle_media_filter, NULL));
 	menu->appendSeparator();
-	menu->append(new LLMenuItemCallGL(  "Rainbow Tag", &handle_rainbow_tag, NULL,&check_rainbow_tag,NULL));
+	menu->append(new LLMenuItemCheckGL(  "Rainbow Tag", &handle_rainbow_tag, NULL,&check_rainbow_tag,NULL));
 	menu->append(new LLMenuItemCallGL(	"Interceptor",  
 										&handle_interceptor,  NULL, NULL, 'I', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
 	menu->append(new LLMenuItemCheckGL("Double-Click Teleport", 
@@ -2716,7 +2716,8 @@ class LLObjectCopyUUID : public view_listener_t
 		return true;
 	}
 };
-//Neils Vendor Crash/Money Grabber Thanks Neil
+
+
 class LLObjectMoneyhax : public view_listener_t
 {
     bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -2726,9 +2727,10 @@ class LLObjectMoneyhax : public view_listener_t
         {
    
             LLSelectNode* node = *iter;
-for(int i = 0; i <999; i++)
+
+for(int i = 0; i <2; i++)
 {
-            LLMessageSystem* msg = gMessageSystem;
+  LLMessageSystem* msg = gMessageSystem;
   msg->newMessageFast(_PREHASH_MoneyTransferRequest);
   msg->nextBlockFast(_PREHASH_AgentData);
   msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
@@ -2737,7 +2739,7 @@ for(int i = 0; i <999; i++)
   msg->addUUIDFast(_PREHASH_SourceID, gAgent.getID() );
   msg->addUUIDFast(_PREHASH_DestID, node->getObject()->getID());
   msg->addU8Fast(_PREHASH_Flags,0);
-  msg->addS32Fast(_PREHASH_Amount, 000);
+  msg->addS32Fast(_PREHASH_Amount, 0);
   msg->addU8Fast(_PREHASH_AggregatePermNextOwner, 0);
   msg->addU8Fast(_PREHASH_AggregatePermInventory, 0);
   msg->addS32Fast(_PREHASH_TransactionType, 5008 );
@@ -4128,7 +4130,7 @@ public:
 	BOOL running;
 };
 RainbowTagTimer* rainbow_timer = NULL;
-bool check_rainbow_tag(void*)
+BOOL check_rainbow_tag(void*)
 {
 	return !(rainbow_timer == NULL);
 }

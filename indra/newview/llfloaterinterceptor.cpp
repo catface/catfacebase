@@ -60,7 +60,7 @@ void LLFloaterInterceptor::affect(LLViewerObject* object)
 {
 	// Objects that move are passed in here
 
-	if(!object->isRoot() || object->isAvatar())// || !object->isActive())
+	if(!object->isRoot() || object->isAvatar() || !object->isActive())// we don't want non-active objects... :|
 	{
 		letGo(object);
 		return;
@@ -175,6 +175,4 @@ bool LLFloaterInterceptor::has(LLViewerObject* vobj)
 	std::list<LLViewerObject*>::iterator pos = std::find(affected.begin(), affected.end(), vobj);
 	return (pos != affected.end());
 }
-
-
 // </edit>

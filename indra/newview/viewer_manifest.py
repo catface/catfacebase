@@ -185,7 +185,8 @@ class WindowsManifest(ViewerManifest):
                                'llplugin', 'slplugin', self.args['configuration'], "SLPlugin.exe"),
                   "SLPlugin.exe")
         
-      	need to get the kdu dll from any of the build directories as well
+      	#need to get the kdu dll from any of the build directories as well
+	#if self.args['buildtype'].lower() in ['releasesse2']:
         try:
             self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
                 '../../libraries/i686-win32/lib/release/llkdu.dll'), 
@@ -203,9 +204,12 @@ class WindowsManifest(ViewerManifest):
         self.path("dbghelp.dll")
 
         # For using FMOD for sound... DJS
-        # For using FMOD for sound... DJS
+	try:
             self.path("../../fmodapi375win/api/fmod.dll", "fmod.dll");
-
+	    pass
+        except:
+            print "Skipping fmod.dll"
+            pass
         # For textures
         #if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
         #    self.path("openjpeg.dll")
@@ -220,7 +224,7 @@ class WindowsManifest(ViewerManifest):
         if self.prefix(src='../media_plugins/webkit/%s' % self.args['configuration'], dst="llplugin"):
             self.path("media_plugin_webkit.dll")
             self.end_prefix()
-            
+          
         # For WebKit/Qt plugin runtimes
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst="llplugin"):
             self.path("libeay32.dll")
@@ -748,8 +752,8 @@ class Linux_i686Manifest(LinuxManifest):
     def construct(self):
         super(Linux_i686Manifest, self).construct()
 
-        install either the libllkdu we just built, or a prebuilt one, in
-        decreasing order of preference.  for linux package, this goes to bin/
+        #install either the libllkdu we just built, or a prebuilt one, in
+        #decreasing order of preference.  for linux package, this goes to bin/
         try:
             self.path(self.find_existing_file('../llkdu/libllkdu.so',
                 '../../libraries/i686-linux/lib_release_client/libllkdu.so'), 

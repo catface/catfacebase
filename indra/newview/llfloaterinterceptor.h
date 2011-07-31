@@ -23,12 +23,12 @@ public:
 	static LLFloaterInterceptor* sInstance;
 	static std::list<LLViewerObject*> affected;
 	static void show();
-	static void LLFloaterInterceptor::onChangeStuff(LLUICtrl* ctrl, void* userData);
-	static void LLFloaterInterceptor::changeRange(F32 range);
+	static void onChangeStuff(LLUICtrl* ctrl, void* userData);
+	static void changeRange(F32 range);
 	static void affect(LLViewerObject* object);
-	static void LLFloaterInterceptor::grab(LLViewerObject* object);
-	static void LLFloaterInterceptor::letGo(LLViewerObject* object);
-	static bool LLFloaterInterceptor::has(LLViewerObject* vobj);
+	static void grab(LLViewerObject* object);
+	static void letGo(LLViewerObject* object);
+	static bool has(LLViewerObject* vobj);
 };
 
 #endif

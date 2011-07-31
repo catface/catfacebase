@@ -162,7 +162,6 @@
 
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
-#include "llnotecardmagic.h"
 
 #include <boost/tokenizer.hpp>
 
@@ -535,7 +534,7 @@ void process_layer_data(LLMessageSystem *mesgsys, void **user_data)
 // 					char image_uuid_str[UUID_STR_SIZE];		/* Flawfinder: ignore */
 // 					memcpy(image_uuid_str, pos_uuid+2, UUID_STR_SIZE-1);		/* Flawfinder: ignore */
 // 					image_uuid_str[UUID_STR_SIZE-1] = 0;
-					
+
 // 					LLUUID image_uuid(image_uuid_str);
 
 // 					LL_INFOS("Messaging") << "Found UUID: " << image_uuid << LL_ENDL;
@@ -971,7 +970,6 @@ void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 {
 	std::vector<LLUUID>::const_iterator it = items.begin();
 	std::vector<LLUUID>::const_iterator end = items.end();
-	LLUUID trash_id(gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH));
 	LLInventoryItem* item;
 	for(; it != end; ++it)
 	{
@@ -996,15 +994,7 @@ void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 			switch(asset_type)
 			{
 			case LLAssetType::AT_NOTECARD:
-				/* <edit>
-				if(!gDontOpenNextNotecard)
-				{
-					gDontOpenNextNotecard = false;
-			*/// </edit>
 				open_notecard((LLViewerInventoryItem*)item, std::string("Note: ") + item->getName(), LLUUID::null, show_keep_discard, LLUUID::null, FALSE);
-				// <edit>
-		//}
-				// </edit>
 				break;
 			case LLAssetType::AT_LANDMARK:
 				open_landmark((LLViewerInventoryItem*)item, std::string("Landmark: ") + item->getName(), show_keep_discard, LLUUID::null, FALSE);
@@ -1653,7 +1643,6 @@ bool goto_url_callback(const LLSD& notification, const LLSD& response)
 	return false;
 }
 static LLNotificationFunctorRegistration goto_url_callback_reg("GotoURL", goto_url_callback);
-
 
 void process_improved_im(LLMessageSystem *msg, void **user_data)
 {
@@ -3036,6 +3025,10 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	LLViewerObject*	chatter;
 
 	msg->getString("ChatData", "FromName", from_name);
+    if (from_name.empty())
+    {
+        from_name = "(no name)";
+    }
 	chat.mFromName = from_name;
 	
 	msg->getUUID("ChatData", "SourceID", from_id);
@@ -3103,7 +3096,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		// RELEASE-RLVa: if this code changes, remember to change the code down below as well
 		if ( (chat.mSourceType == CHAT_SOURCE_OBJECT && chat.mChatType != CHAT_TYPE_DEBUG_MSG) && 
 			 (gSavedSettings.getBOOL("EffectScriptChatParticles")) && 
-			 ((!rlv_handler_t::isEnabled()) || (CHAT_TYPE_OWNER != chat.mChatType)) )
+			 (CHAT_TYPE_OWNER != chat.mChatType) )
 // [/RLVa:KB]
 		{
 			LLPointer<LLViewerPartSourceChat> psc = new LLViewerPartSourceChat(chatter->getPositionAgent());
@@ -3168,8 +3161,12 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			if (mesg.substr(mesg.size()-3, 3) == " #<") {
 				// hello from object
 				if (from_id.isNull()) return;
-				char buf[200];
-				snprintf(buf, 200, "%s v%d.%d.%d", LL_CHANNEL, LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH);
+				std::string buf(
+					gSavedSettings.getString("SpecifiedChannel") + " " +
+					llformat("%d", gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
+					llformat("%d", gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
+					llformat("%d", gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
+					llformat("%d", gSavedSettings.getU32("SpecifiedVersionBuild")));
 				send_chat_from_viewer(buf, CHAT_TYPE_WHISPER, 427169570);
 				gChatObjectAuth[from_id] = 1;
 			} else if (gChatObjectAuth.find(from_id) != gChatObjectAuth.end()) {
@@ -3713,19 +3710,6 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 	LLHUDManager::getInstance()->sendEffects();
 
-	// OGPX : when using agent domain, we get tp finish with ip of 0.0.0.0 and port 0. 
-	//    try bailing out early if tp state is PLACE_AVATAR (so legacy should still execute rest of this path)
-	//    not really wild about this, but it's a way to test if we can get TP working w/o receiving TP finish
-	//    TODO: can be removed *when* agent domain no longer sends tp finish
-	//
-    // OGPX TODO: see if we can nuke TELEPORT_PLACE_AVATAR state once TeleportFinish is 
-	//    completely removed from all SL and OS region code
-
-	if (gAgent.getTeleportState() == LLAgent::TELEPORT_PLACE_AVATAR )
-	{
-		llinfos << "Got teleport location message when doing agentd TP" << llendl;
-		return;
-	}
 	U32 location_id;
 	U32 sim_ip;
 	U16 sim_port;
@@ -3950,6 +3934,17 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 	{
 		// This is likely just the initial logging in phase.
 		gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
+
+		if(LLStartUp::getStartupState() < STATE_STARTED)
+		{	// This is initial log-in, not a region crossing:
+			// Set the camera looking ahead of the AV so send_agent_update() below 
+			// will report the correct location to the server.
+			LLVector3 look_at_point = look_at;
+			look_at_point = agent_pos + look_at_point.rotVec(gAgent.getQuat());
+
+			static LLVector3 up_direction(0.0f, 0.0f, 1.0f);
+			LLViewerCamera::getInstance()->lookAt(agent_pos, look_at_point, up_direction);
+		}
 	}
 
 	if ( LLTracker::isTracking(NULL) )
@@ -4314,7 +4309,6 @@ void process_object_update(LLMessageSystem *mesgsys, void **user_data)
 
 	// Update the object...
 	gObjectList.processObjectUpdate(mesgsys, user_data, OUT_FULL);
-	stop_glerror();
 }
 
 void process_compressed_object_update(LLMessageSystem *mesgsys, void **user_data)
@@ -4332,7 +4326,6 @@ void process_compressed_object_update(LLMessageSystem *mesgsys, void **user_data
 
 	// Update the object...
 	gObjectList.processCompressedObjectUpdate(mesgsys, user_data, OUT_FULL_COMPRESSED);
-	stop_glerror();
 }
 
 void process_cached_object_update(LLMessageSystem *mesgsys, void **user_data)
@@ -4350,7 +4343,6 @@ void process_cached_object_update(LLMessageSystem *mesgsys, void **user_data)
 
 	// Update the object...
 	gObjectList.processCachedObjectUpdate(mesgsys, user_data, OUT_FULL_CACHED);
-	stop_glerror();
 }
 
 
@@ -5251,6 +5243,10 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
 		args["MESSAGE"] = desc;
 		LLNotifications::instance().add("SystemMessage", args);
 
+		// Also send notification to chat -- MC
+		LLChat chat(desc);
+		LLFloaterChat::addChat(desc);
+
 		// Once the 'recent' container gets large enough, chop some
 		// off the beginning.
 		const U32 MAX_LOOKBACK = 30;
@@ -5430,55 +5426,6 @@ void process_alert_core(const std::string& message, BOOL modal)
 		snap_filename += SCREEN_HOME_FILENAME;
 		gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight(), FALSE, FALSE);
 	}
-	// <edit>
-	else if(message.find("Can't move object ") == 0)
-	{
-		std::string::size_type begin = message.find("' to \n{ ");
-		if(begin != std::string::npos)
-		{
-			llinfos << "to" << llendl;
-			begin += 8;
-			std::string::size_type end = message.find(" } in region ", begin);
-			if(end != std::string::npos)
-			{
-				std::string::size_type length = end - begin;
-				std::string location = message.substr(begin, length);
-				std::vector<std::string> words;
-				int cutAt;
-				while( (cutAt = location.find(", ")) != std::string::npos )
-				{
-					if(cutAt > 0)
-					{
-						words.push_back(location.substr(0, cutAt));
-					}
-					location = location.substr(cutAt + 2);
-				}
-				if(location.length() > 0)
-				{
-					words.push_back(location);
-				}
-				if(words.size() == 3)
-				{
-					// find region name
-					begin = end + 13;
-					end = message.find(" because your objects are not allowed on this parcel.", begin);
-					if(end != std::string::npos)
-					{
-						length = end - begin;
-						std::string region = message.substr(begin, length);
-						region = LLWeb::escapeURL(region);
-						std::string url = "http://slurl.com/secondlife/" + region + "/" + words[0] + "/" + words[1] + "/" + words[2];
-						std::string new_message = message + " " + url;
-						LLStringUtil::format_map_t args;
-						args["[MESSAGE]"] = new_message;
-						//LLNotifyBox::showXml("SystemMessageTip", args);
-						return;
-					}
-				}
-			}
-		}
-	}
-	// </edit>
 
 	const std::string ALERT_PREFIX("ALERT: ");
 	const std::string NOTIFY_PREFIX("NOTIFY: ");

@@ -3912,7 +3912,7 @@ void LLVoiceClient::sessionAddedEvent(
 	LL_INFOS("Voice") << "session " << uriString << ", alias " << alias << ", name " << nameString << " handle " << sessionHandle << LL_ENDL;
 	LLChat chat;
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	chat.mText = llformat("Voice: connected to %s", uriString);
+	chat.mText = llformat("Voice: connected to %s", uriString.c_str());
 	LLFloaterChat::addChat(chat);
 	
 	session = addSession(uriString, sessionHandle);
@@ -3935,9 +3935,9 @@ void LLVoiceClient::sessionAddedEvent(
 				// Wrong URI, but an alias is available.  Stash the incoming URI as an alternate
 				session->mAlternateSIPURI = session->mSIPURI;
 
-				// and generate a proper URI from the ID.
-				setSessionURI(session, sipURIFromID(session->mCallerID));
-				chat.mText = llformat("Voice: SIPURI %s");
+				std::string SIPURI_proper = sipURIFromID(session->mCallerID);// and generate a proper URI from the ID.
+				setSessionURI(session, SIPURI_proper);
+				chat.mText = llformat("Voice: SIPURI %s", SIPURI_proper.c_str());//just gunna post this, brb lol
 				LLFloaterChat::addChat(chat);
 			}
 			else

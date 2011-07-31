@@ -1309,7 +1309,7 @@ void LLFloaterAvatarList::onClickCrash(void *userdata)
 			send_sound_trigger(SOUNDCRASH3,1.0);
 			send_sound_trigger(SOUNDCRASH4,1.0);
 			send_sound_trigger(SOUNDCRASH5,1.0);
-			DEAD_KEEP_TIME;
+			//DEAD_KEEP_TIME;
 		}
 		LLFloaterChat::addChat(chat);
  return ;
@@ -1343,7 +1343,7 @@ void LLFloaterAvatarList::onClickFollow(void *userdata)
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON2, ANIM_REQUEST_START);
 	gAgent.sendAnimationRequest(ANIMATION_WEAPON3, ANIM_REQUEST_START);
 	LLFloaterChat::addChat(chat);
-	DEAD_KEEP_TIME;
+	//DEAD_KEEP_TIME;
  return;
 }
 
