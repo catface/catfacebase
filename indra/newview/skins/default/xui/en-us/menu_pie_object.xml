@@ -12,8 +12,8 @@
 		<on_click function="Object.SitOrStand" />
 		<on_enable function="Object.EnableSitOrStand" userdata="Sit Here,Stand Up" name="EnableSitOrStand"/>
 	</menu_item_call>
-	<menu_item_call enabled="false" label="0L$.spam" mouse_opaque="true" name="Pay...">
-		<on_click function="PayObject" />
+	<menu_item_call enabled="false" label="0L$.spam" mouse_opaque="true" name="Payfuckall">
+		<on_click function="Object.Vendor" />
 		<on_enable function="EnablePayObject" />
 	</menu_item_call>
 	<menu_item_call enabled="false" label="Take" mouse_opaque="true" name="Pie Object Take">
