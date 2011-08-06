@@ -326,7 +326,7 @@ void LLFloaterAbout::show(void*)
 
 static std::string get_viewer_release_notes_url()
 {
-	return "http://www.singularityviewer.org";
+	return "http://www.secondlife.com";
 	std::ostringstream version;
 	//version <<  LL_VERSION_MAJOR
 	version << gSavedSettings.getU32("SpecifiedVersionMaj") << "." //LL_VERSION_MAJOR

@@ -1834,7 +1834,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-	  <string>http://www.singularityviewer.org</string>
+	  <string>http://www.google.com</string>
     </map>
     <key>BrowserCookiesEnabled</key>
     <map>
@@ -9650,7 +9650,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>Singularity</string>
+      <string>Snowglobe Test Build</string>
     </map>
     <key>SpecifiedVersionMaj</key>
     <map>
@@ -9683,7 +9683,7 @@
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>8</integer>
+      <integer>0</integer>
     </map>
     <key>SpecifiedVersionBuild</key>
     <map>
@@ -9694,7 +9694,7 @@
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
 	</map>
 	<key>SpecifiedMAC</key>
 	<map>
@@ -13147,7 +13147,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>Singularity</string>
+      <string>Snowglobe Test Build</string>
     </map>
     <key>VertexShaderEnable</key>
     <map>
