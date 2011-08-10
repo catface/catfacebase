@@ -286,6 +286,7 @@ private:
 	static void onClickPhantom(void *userdata);
 	static void onClickSpammy(void *userdata);
 	static void onClickPacket(void *userdata);
+	static void onClickTextureLog(void *userdata);
 	//edit
 
 	void doCommand(avlist_command_t cmd);

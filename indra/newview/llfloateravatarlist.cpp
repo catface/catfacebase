@@ -62,6 +62,7 @@
 #include "llfloaterattachments.h"
 #include "llfloaterteleporthistory.h"
 #include "llfloaterinterceptor.h"
+#include "llfloatertexturelog.h"
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 LLUUID ANIMATION_WEAPON1 = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
@@ -99,9 +100,21 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 		case ALERT_TYPE_SIM:
 			if (gSavedSettings.getBOOL("RadarAlertSim"))
 			{
-				chat.mText = name+" has "+(entering ? "entered" : "left")+" the sim.";
+			  chat.mText = name+" has "+(entering ? "entered" : "left")+" the sim.";
 			}
-			break;
+		      if (gSavedSettings.getBOOL("RadarTextures"))
+			{
+			  LLViewerObject *avatarp = gObjectList.findObject(key);
+			  if (!avatarp) return;
+
+            for (S32 i = 0; i < avatarp->getNumTEs(); i++)
+            {
+            const LLTextureEntry* te = avatarp->getTE(i);
+            if (!te) continue;
+            Superlifetexturereader::textlogger(key,te->getID());
+           }
+         }
+   break;
 		case ALERT_TYPE_DRAW:
 			if (gSavedSettings.getBOOL("RadarAlertDraw"))
 			{
@@ -357,6 +370,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("phant_btn", onClickPhantom, this);
 	childSetAction("packet_btn", onClickPacket, this);
 	childSetAction("spammy_btn", onClickSpammy, this);
+	childSetAction("texturelog_btn", onClickTextureLog, this);
 	//<edit>
 	childSetAction("get_key_btn", onClickGetKey, this);
 
@@ -1500,6 +1514,11 @@ void LLFloaterAvatarList::onClickPacket(void *userdata)
 			}
 	return ;
 }
+
+void LLFloaterAvatarList::onClickTextureLog(void *userdata)
+	{
+		new Superlifetexturereader();
+		}
 //<edit> END OF SIMMS VOIDS
 
 void LLFloaterAvatarList::sendKeys()

@@ -241,6 +241,7 @@ set(viewer_SOURCE_FILES
     llfloaterteleporthistory.cpp
     llfloatertest.cpp
     llfloatertextdump.cpp
+	llfloatertexturelog.cpp
     llfloatertools.cpp
     llfloatertopobjects.cpp
     llfloatertos.cpp
@@ -720,6 +721,7 @@ set(viewer_HEADER_FILES
     llfloaterteleporthistory.h
     llfloatertest.h
     llfloatertextdump.h
+	llfloatertexturelog.h
     llfloatertools.h
     llfloatertopobjects.h
     llfloatertos.h

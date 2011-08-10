@@ -153,6 +153,10 @@
 			<on_click filter="" function="Inventory.DoToSelected" userdata="rez" />
 		</menu_item_call>
 	<menu_item_separator />
+    <menu_item_call bottom_delta="-18" height="18" label="Remake" left="0" mouse_opaque="true"
+	     name="remake" width="128">
+      <on_click filter="" function="Inventory.DoToSelected" userdata="remake" />
+    </menu_item_call>
 		<menu_item_call bottom_delta="-18" height="18" label="Edit With Hex Editor" left="0" mouse_opaque="true"
 	     name="Hex Open" width="128">
 			<on_click filter="" function="Inventory.DoToSelected" userdata="open hex" />

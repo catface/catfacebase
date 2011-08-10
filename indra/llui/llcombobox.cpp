@@ -75,6 +75,7 @@ LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::
 	mPrearrangeCallback( NULL ),
 	mTextEntryCallback( NULL ),
 	mSuppressTentative( false ),
+	mSuppressAutoComplete( false ),
 	mLabel(label),
 	mListColor(LLUI::sColorsGroup->getColor("ComboBoxBg"))
 {
@@ -105,7 +106,7 @@ LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::
 	mList->setCommitOnKeyboardMovement(FALSE);
 	addChild(mList);
 
-	mArrowImage = LLUI::sImageProvider->getUIImage("combobox_arrow.tga");
+	mArrowImage = LLUI::getUIImage("combobox_arrow.tga");
 	mButton->setImageOverlay("combobox_arrow.tga", LLFontGL::RIGHT);
 
 	updateLayout();
@@ -178,8 +179,6 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 							NULL);
 	combo_box->setAllowTextEntry(allow_text_entry, max_chars);
 
-	combo_box->initFromXML(node, parent);
-
 	const std::string& contents = node->getValue();
 
 	if (contents.find_first_not_of(" \n\t") != contents.npos)
@@ -209,6 +208,9 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 			}
 		}
 	}
+
+	//Do this AFTER combo_items are set up so setValue is actually able to select the correct initial entry.
+	combo_box->initFromXML(node, parent);
 
 	// if providing user text entry or descriptive label
 	// don't select an item under the hood
@@ -248,6 +250,8 @@ void LLComboBox::onCommit()
 		mTextEntry->setValue(getSimple());
 		mTextEntry->setTentative(FALSE);
 	}
+
+	setControlValue(getValue());
 	LLUICtrl::onCommit();
 }
 
@@ -901,6 +905,11 @@ void LLComboBox::setTextEntry(const LLStringExplicit& text)
 	}
 }
 
+const std::string LLComboBox::getTextEntry() const
+{
+	return mTextEntry->getText();
+}
+
 //static 
 void LLComboBox::onTextEntry(LLLineEditor* line_editor, void* user_data)
 {
@@ -978,6 +987,10 @@ void LLComboBox::onTextEntry(LLLineEditor* line_editor, void* user_data)
 
 void LLComboBox::updateSelection()
 {
+	if(mSuppressAutoComplete) {
+		return;
+	}
+	
 	LLWString left_wstring = mTextEntry->getWText().substr(0, mTextEntry->getCursor());
 	// user-entered portion of string, based on assumption that any selected
     // text was a result of auto-completion
@@ -1030,6 +1043,11 @@ void LLComboBox::setSuppressTentative(bool suppress)
 {
 	mSuppressTentative = suppress;
 	if (mTextEntry && mSuppressTentative) mTextEntry->setTentative(FALSE);
+}
+
+void LLComboBox::setSuppressAutoComplete(bool suppress)
+{
+	mSuppressAutoComplete = suppress;
 }
 
 

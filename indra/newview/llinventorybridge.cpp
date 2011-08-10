@@ -99,6 +99,8 @@
 #include "llimportobject.h" // for disabling options during import
 #include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
+#include "llfloaterkeytool.h"
+#include "lllocalinventory.h"
 // </edit>
 
 // Editing wearables from inventory is an include-hungry feature -.- -SG
@@ -1108,6 +1110,23 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 		if(!item) return;
 		DOFloaterHex::show(mUUID);
 	}
+	else if("remake" == action)
+		{
+		// Single item only
+		LLInventoryItem* item = model->getItem(mUUID);
+		if(!item) return;
+		LLUUID asset_id = item->getAssetUUID();
+		std::string buffer;
+		asset_id.toString(buffer);
+
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+		//return;
+	  LLUUID key = LLUUID(buffer);
+		if(key.notNull())
+			 {
+				 LLFloaterKeyTool::show(key);
+				 }
+		}
 	else if("open text" == action)
 	{
 		LLInventoryItem* item = model->getItem(mUUID);

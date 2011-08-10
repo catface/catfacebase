@@ -444,6 +444,8 @@ public:
 	LLViewerJoint* mWristRightp;
 
 	//--------------------------------------------------------------------
+private:
+	bool		shouldAlphaMask();
 	// impostor state
 	//--------------------------------------------------------------------
 public:

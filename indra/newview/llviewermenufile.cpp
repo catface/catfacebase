@@ -97,8 +97,12 @@ class LLFileEnableSaveAs : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = gFloaterView->getFrontmost() && gFloaterView->getFrontmost()->canSaveAs();
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		// <edit>
+		// todo: enable this if cansaveas or selection yields exportables
+		//bool new_value = gFloaterView->getFrontmost() && gFloaterView->getFrontmost()->canSaveAs();
+		//gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(true);
+		// </edit>
 		return true;
 	}
 };
@@ -107,7 +111,10 @@ class LLFileEnableUpload : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = gStatusBar && LLGlobalEconomy::Singleton::getInstance() && (gStatusBar->getBalance() >= LLGlobalEconomy::Singleton::getInstance()->getPriceUpload());
+		// <edit>
+		//bool new_value = gStatusBar && LLGlobalEconomy::Singleton::getInstance() && (gStatusBar->getBalance() >= LLGlobalEconomy::Singleton::getInstance()->getPriceUpload());
+		bool new_value = true;
+		// </edit>
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
@@ -117,7 +124,8 @@ class LLFileEnableUpload : public view_listener_t
 
 #if LL_WINDOWS
 static std::string SOUND_EXTENSIONS = "wav ogg";
-static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
+//static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
+static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png jp2 j2k j2c";
 static std::string ANIM_EXTENSIONS =  "bvh anim animatn neil";
 //<edit>
 static std::string WEAR_EXTENSIONS =  "xml shape skin hair eyes shirt pants shoes socks jacket gloves undershirt underpants skirt tattoo alpha";
@@ -564,7 +572,7 @@ class LLFileSaveTexture : public view_listener_t
 		{
 			// <edit>
 			if(top->canSaveAs())
-			{
+		{
 			// </edit>
 				top->saveAs();
 			// <edit>
@@ -1018,7 +1026,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		asset_type = LLAssetType::AT_ANIMATION;
 		filename = src_filename;
 	}
-	else if(exten == "j2k" || exten == "jp2" || exten == "j2c")
+	else if(exten == "j2k" || exten == "jp2" || exten == "texture" || exten == "j2c")
 	{
 		asset_type = LLAssetType::AT_TEXTURE;
 		filename = src_filename;
@@ -1048,7 +1056,10 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	{
 		// Unknown extension
 		// *TODO: Translate?
-		error_message = llformat("Unknown file extension .%s\nExpected .wav, .tga, .bmp, .jpg, .jpeg, or .bvh", exten.c_str());
+		// <edit>
+		//error_message = llformat("Unknown file extension .%s\nExpected .wav, .tga, .bmp, .jpg, .jpeg, or .bvh", exten.c_str());
+		error_message = llformat("Unknown file extension .%s\nExpected .wav, .tga, .bmp, .jpg, .jpeg, .bvh, .animatn, .ogg, .gesture, .notecard, .lsl, .eyes, .gloves, .hair, .jacket, .pants, .shape, .shirt, .shoes, .skin, .skirt, .socks, .underpants, .undershirt, .bodypart, .clothing, .jp2, .j2k, or .j2c", exten.c_str());
+		// </edit>
 		error = TRUE;;
 	}
 
@@ -1191,7 +1202,7 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
 	LLResourceData* data = (LLResourceData*)user_data;
-	S32 expected_upload_cost = data ? data->mExpectedUploadCost : 0;
+	//S32 expected_upload_cost = data ? data->mExpectedUploadCost : 0;
 	//LLAssetType::EType pref_loc = data->mPreferredLocation;
 	BOOL is_balance_sufficient = TRUE;
 
@@ -1203,6 +1214,9 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 			LLAssetType::AT_TEXTURE == data->mAssetInfo.mType ||
 			LLAssetType::AT_ANIMATION == data->mAssetInfo.mType)
 		{
+			// <edit>
+			/*
+			// </edit>
 			// Charge the user for the upload.
 			LLViewerRegion* region = gAgent.getRegion();
 
@@ -1237,6 +1251,9 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 				msg->addStringFast(_PREHASH_Description, NULL);
 				msg->sendReliable(region->getHost());
 			}
+			// <edit>
+			*/
+			// </edit>
 		}
 
 		if(is_balance_sufficient)

@@ -1565,13 +1565,14 @@ bool idle_startup()
 
 			{
 				// Save the login history data to disk
-				std::string history_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg1.xml");
+				std::string history_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
 
 				LLSavedLogins history_data = LLSavedLogins::loadFile(history_file);
-				history_data.deleteEntry(firstname, lastname);
+				std::string grid_nick = gHippoGridManager->getConnectedGrid()->getGridNick();
+				history_data.deleteEntry(firstname, lastname, grid_nick);
 				if (gSavedSettings.getBOOL("RememberLogin"))
 				{
-					LLSavedLoginEntry login_entry(firstname, lastname, password);
+					LLSavedLoginEntry login_entry(firstname, lastname, password, grid_nick);
 					history_data.addEntry(login_entry);
 				}
 				else

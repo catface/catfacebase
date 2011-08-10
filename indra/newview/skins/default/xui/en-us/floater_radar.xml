@@ -303,6 +303,14 @@
 				   initial_value="true" enabled="true" radio_style="false" 
 				   control_name="RadarChatAlerts"
 				   tool_tip="Announce alerts about incoming and outgoing avatars in chat" />
+				   
+	<check_box height="10" label="AV Texture Logger"
+				   left="20" bottom_delta="-18" name="radar_alerts" 
+				   width="200" follows="bottom|left"
+				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
+				   initial_value="true" enabled="true" radio_style="false" 
+				   control_name="RadarTextures"
+				   tool_tip="Logs avatar textures upon entering simulator and displays in chat" />			   
 
 			<check_box height="16" label="Avatars entering/exiting the sim"
 				   left="20" bottom_delta="-18" name="alerts_sim"

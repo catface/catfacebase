@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater
+	name="Neil_texture_Debugger"
+	title="Radar must be open and the checkboxes in alerts(avtexture logger and display in chat)"
+	can_resize="false"
+	can_minimize="true"
+	can_close="true"
+	can_drag_on_left="false"
+	rect_control="Av Control"
+	min_width="565"
+	min_height="720"
+	width="565"
+	height="720"
+	>
+
+
+	    
+	<scroll_list
+		    name="neiltexturelogger"
+		    left="20"
+		    right="-200"
+		    top="-20"
+		    bottom="100"
+		    column_padding="0"
+		    can_resize="true"
+		    follows="left|top|bottom|right"
+		    draw_heading="true"
+		    multi_select="true"
+		    search_column="1"
+		    >
+				<column name="lulz" label="Avname" width="120"  />
+   		<column name="name" label="Anim uuid" width="150"/>
+	
+
+	</scroll_list>
+	    <button bottom="30" follows="left|top" font="SansSerifSmall" height="19"
+          label="open texture" left="20" name="opentext"
+          scale_image="true" width="200" />
+	
+<texture_picker bottom="-275" height="250" left="370" name="ng"
+	     width="180" />
+		 		  
+
+</floater>
+

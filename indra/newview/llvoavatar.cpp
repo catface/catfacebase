@@ -225,8 +225,10 @@ struct LLAvatarTexData
 
 struct LLTextureMaskData
 {
-	LLTextureMaskData( const LLUUID& id )
-		: mAvatarID(id), mLastDiscardLevel(S32_MAX) {}
+	LLTextureMaskData( const LLUUID& id ) :
+		mAvatarID(id), 
+		mLastDiscardLevel(S32_MAX) 
+	{}
 	LLUUID				mAvatarID;
 	S32					mLastDiscardLevel;
 };
@@ -1146,7 +1148,6 @@ void LLVOAvatar::markDead()
 		mNameText = NULL;
 		sNumVisibleChatBubbles--;
 	}
-
 	mVoiceVisualizer->markDead();
 
 	mBeam = NULL;
@@ -1730,10 +1731,8 @@ BOOL LLVOAvatar::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 									  LLVector3* intersection,
 									  LLVector2* tex_coord,
 									  LLVector3* normal,
-									  LLVector3* bi_normal
-		)
+									  LLVector3* bi_normal)
 {
-
 	if ((mIsSelf && !gAgent.needsRenderAvatar()) || !LLPipeline::sPickAvatar)
 	{
 		return FALSE;
@@ -3258,6 +3257,7 @@ void LLVOAvatar::idleUpdateLoadingEffect()
 		if (isFullyLoaded())
 		{
 			deleteParticleSource();
+			updateLOD();
 		}
 		else
 		{
@@ -3436,7 +3436,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		static const LLCachedControl<LLColor4>		ascent_custom_tag_color("AscentCustomTagColor", LLColor4(.5f,1.f,.25f,1.f));
 		static const LLCachedControl<std::string>	ascent_custom_tag_label("AscentCustomTagLabel","custom");
 		static const LLCachedControl<bool>			ascent_use_tag("AscentUseTag",true);
-		static const LLCachedControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","f25263b7-6167-4f34-a4ef-af65213b2e39");
+		static const LLCachedControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","c228d1cf-4b5d-4ba8-84f4-899a0796aa97");
 
 		if (ascent_use_custom_tag)
 		{
@@ -3502,6 +3502,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		color = LLColor4(0.5f, 0.0f, 0.0f);
 		client = "Unknown";
 	}
+	//xml
 	if (LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))
 	{
 		
@@ -3525,7 +3526,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl;
 	}
 
-	if (false)
+	/*if (false)
 	//We'll remove this entirely eventually, but it's useful information if we're going to try for the new client tag idea. -HgB
 	//if(useComment) 
 	{
@@ -3556,7 +3557,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 
 			extraMetadata += baked_eye_image->decodedComment;
 		}
-	}
+	}*/
 }
 
 
@@ -4968,6 +4969,16 @@ void LLVOAvatar::updateVisibility()
 	mVisible = visible;
 }
 
+// private
+bool LLVOAvatar::shouldAlphaMask()
+{
+	const bool should_alpha_mask = mSupportsAlphaLayers && !LLDrawPoolAlpha::sShowDebugAlpha // Don't alpha mask if "Highlight Transparent" checked
+							&& !LLDrawPoolAvatar::sSkipTransparent && mHasBakedHair;
+
+	return should_alpha_mask;
+
+}
+
 //------------------------------------------------------------------------
 // needsRenderBeam()
 //------------------------------------------------------------------------
@@ -5897,7 +5908,7 @@ std::string LLVOAvatar::getIdleTime()
 // animations.
 LLUUID LLVOAvatar::remapMotionID(const LLUUID& id)
 {
-	LLCachedControl<bool> use_new_walk_run("UseNewWalkRun",true);
+	LLCachedControl<bool> use_new_walk_run("UseNewWalkRun",false);
 	LLCachedControl<bool> use_cross_walk_run("UseCrossWalkRun",false);
 	LLUUID result = id;
 
@@ -7722,8 +7733,7 @@ LLColor4 LLVOAvatar::getGlobalColor( const std::string& color_name )
 	{
 		return mTexSkinColor->getColor();
 	}
-	else
-	if( color_name=="hair_color" && mTexHairColor )
+	else if(color_name=="hair_color" && mTexHairColor)
 	{
 		return mTexHairColor->getColor();
 	}
@@ -7809,8 +7819,7 @@ void LLVOAvatar::onGlobalColorChanged( LLTexGlobalColor* global_color, BOOL set_
 		invalidateComposite( mBakedTextureData[BAKED_UPPER].mTexLayerSet,	set_by_user );
 		invalidateComposite( mBakedTextureData[BAKED_LOWER].mTexLayerSet,	set_by_user );
 	}
-	else
-	if( global_color == mTexHairColor )
+	else if (global_color == mTexHairColor)
 	{
 //		llinfos << "invalidateComposite cause: onGlobalColorChanged( hair color )" << llendl; 
 		invalidateComposite( mBakedTextureData[BAKED_HEAD].mTexLayerSet,  set_by_user );
@@ -7827,8 +7836,7 @@ void LLVOAvatar::onGlobalColorChanged( LLTexGlobalColor* global_color, BOOL set_
 			}
 		}
 	}
-	else
-	if( global_color == mTexEyeColor )
+	else if (global_color == mTexEyeColor)
 	{
 //		llinfos << "invalidateComposite cause: onGlobalColorChanged( eyecolor )" << llendl; 
 		invalidateComposite( mBakedTextureData[BAKED_EYES].mTexLayerSet,  set_by_user );
@@ -9770,8 +9778,7 @@ S32 LLVOAvatar::getUnbakedPixelAreaRank()
 		{
 			return rank;
 		}
-		else
-		if( !inst->isDead() && !inst->isFullyBaked() )
+		else if (!inst->isDead() && !inst->isFullyBaked())
 		{
 			rank++;
 		}
@@ -10572,7 +10579,7 @@ BOOL LLVOAvatar::updateLOD()
 	BOOL res = updateJointLODs();
 
 	LLFace* facep = mDrawable->getFace(0);
-	if (facep->mVertexBuffer.isNull())
+	if (!facep->getVertexBuffer())
 	{
 		dirtyMesh(2);
 	}
