@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="radar" title="Radar"
 	can_resize="true" can_minimize="true" can_close="true" can_drag_on_left="false"
-	rect_control="FloaterRadarRect" min_width="297"	min_height="430">
+	rect_control="FloaterRadarRect" min_width="297"	min_height="380">
 
 	<scroll_list name="avatar_list"
-		    left="5" right="-5" top="-20" bottom="160" can_resize="true"
+		    left="5" right="-5" top="-20" bottom="115" can_resize="true"
 		    column_padding="0" follows="left|top|bottom|right"
 		    draw_heading="true" multi_select="true" search_column="1"
 		    tool_tip="Hold shift or control while clicking to select multiple avatars">
@@ -18,7 +18,7 @@
 
 	<tab_container border="false" bottom_delta="-159" height="156" left="3" right="-5" mouse_opaque="false"
 		       name="actions_tab_container" tab_position="top" follows="left|right|bottom">
-		<panel border="true" bottom_delta="-180" follows="left|top|right|bottom" height="255"
+		<panel border="false" bottom_delta="-150" follows="left|top|right|bottom" height="255"
 		       label="Avatar" left="3" mouse_opaque="true"
 		     name="actions_tab" width="295">
 			<!-- upper row -->
@@ -56,29 +56,6 @@
 			       follows="bottom|left"
 			       />
 			<button
-			       name="huds_btn"
-			       label="AV Huds"
-			       tool_tip="Inspect Selected Avatar's Worn Huds"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<!-- upper middle row -->
-			<button
-			       name="profile_btn"
-			       label="Profile"
-			       tool_tip="Shows Information On Secected Avatar"
-			       left="2"
-			       bottom_delta="-22"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
 			       name="teleport_btn"
 			       label="TP to"
 			       tool_tip="Teleport to avatar's position"
@@ -89,79 +66,12 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-			<button
-			       name="debug_btn"
-			       label="AV Textures"
-			       tool_tip="Opens the selected avatar's"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="inter_btn"
-			       label="Intercept"
-			       tool_tip="Opens Impostor Object Interceptor"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<!-- lower middle row-->
-			<button
-			       name="im_btn"
-			       label="IM"
-			       tool_tip="Open Instant Message session"
-			       left="2"
-			       bottom_delta="-22"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="offer_btn"
-			       label="Offer TP"
-			       tool_tip="Offer Teleport"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="anims_btn"
-			       label="AV Anims"
-			       tool_tip="Rip the selected avatars animations"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="crash_btn"
-			       label="(S) Crash"
-			       tool_tip="Executes The Impostor Sound Crasher"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<!-- lower row-->
+			<!-- upper middle row -->
 			<button
 			       name="mark_btn"
 			       label="Mark"
 			       tool_tip="Mark/UnMark this avatar in the list"
-			       left="3"
+			       left="2"
 			       bottom_delta="-22"
 			       width="68"
 			       height="20"
@@ -191,9 +101,9 @@
 			       follows="bottom|left"
 			       />
 			<button
-			       name="follow_btn"
-			       label="Crash(A)"
-			       tool_tip="Executes The Impostor Animation Crash Loop"
+			       name="offer_btn"
+			       label="Offer TP"
+			       tool_tip="Offer Teleport"
 			       left_delta="72"
 			       bottom_delta="0"
 			       width="68"
@@ -201,19 +111,41 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-      <!-- lowest row-->
-      <button
-			       name="track_btn"
-			       label="Track"
-			       tool_tip="Toggle tracking of this avatar's position"
-			       left="3"
+			<!-- lower middle row-->
+			<button
+			       name="position_btn"
+			       label="copy Pos"
+			       tool_tip="Copy Avatars Position To The Clipboard"
+			       left="2"
 			       bottom_delta="-22"
 			       width="68"
 			       height="20"
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-      <button
+			<button
+			       name="huds_btn"
+			       label="AV Huds"
+			       tool_tip="Offer Teleport"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="get_key_btn"
+			       label="UUID"
+			       tool_tip="Copies The Selected Avatars UUID Key"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
 			       name="tphist_btn"
 			       label="TP Hist"
 			       tool_tip="Opens Your Teleport History"
@@ -224,33 +156,11 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-      <button
-					name="export_dude_btn"
-					label="AV Export"
-					tool_tip="Export the selected avatar in list"
-					left_delta="72"
-					bottom_delta="0"
-					width="68"
-					height="20"
-					font="SansSerifSmall"
-					follows="bottom|left"
-			       />
-      <button
-					name="crashno_btn"
-					label="NoCrash"
-					tool_tip="Kills The Impostor (A)Crash loop"
-					left_delta="72"
-					bottom_delta="0"
-					width="68"
-					height="20"
-					font="SansSerifSmall"
-					follows="bottom|left"
-			       />
-      <!-- bottom row-->
-      <button
-			       name="get_key_btn"
-			       label="UUID"
-			       tool_tip="Copies The Selected Avatars UUID Key"
+			<!-- lower row-->
+			<button
+			       name="track_btn"
+			       label="Track"
+			       tool_tip="Toggle tracking of this avatar's position"
 			       left="3"
 			       bottom_delta="-22"
 			       width="68"
@@ -258,7 +168,29 @@
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
-      <button
+			<button
+			       name="im_btn"
+			       label="IM"
+			       tool_tip="Open Instant Message session"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="profile_btn"
+			       label="Profile"
+			       tool_tip="Shows Information On Secected Avatar"
+			       left_delta="72"
+			       bottom_delta="0"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
 			       name="ground_btn"
 			       label="TP Ground"
 			       tool_tip="Moves Avatar To Ground Level"
@@ -268,76 +200,91 @@
 			       height="20"
 			       font="SansSerifSmall"
 			       follows="bottom|left"
+			       />     
+		</panel>
+
+		<panel border="false" bottom_delta="-159" follows="left|top|right|bottom" height="255"
+		       label="Ripping" left="1" mouse_opaque="true"
+		       name="alerts_tab" width="295">
+	   <button
+			       name="texturelog_btn"
+			       label="Textures"
+			       tool_tip="Avatar Texure Logger"
+			       left="2"
+			       bottom_delta="-140"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+					name="debug_btn"
+					label="AV Textures"
+					tool_tip="Opens the selected avatars Textures"
+					left="2"
+					bottom_delta="-22"
+					width="68"
+					height="20"
+					font="SansSerifSmall"
+					follows="bottom|left"
 			       />
       <button
-			       name="phant_btn"
-			       label="Phantom"
-			       tool_tip="Toggles your avatar's Phantom State"
-			       left_delta="72"
-			       bottom_delta="0"
+			       name="export_dude_btn"
+			       label="AV Export"
+			       tool_tip="Export the selected avatar in list"
+			       left="2"
+			       bottom_delta="-22"
 			       width="68"
 			       height="20"
 			       font="SansSerifSmall"
 			       follows="bottom|left"
 			       />
       <button
-					name="crash4_btn"
-					label="cSpam"
-					tool_tip="Sends Calling Card Spam To Selected Avatar"
-					left_delta="72"
-					bottom_delta="0"
-					width="68"
-					height="20"
-					font="SansSerifSmall"
-					follows="bottom|left"
-			       />      
-		</panel>
-
-		<panel border="true" bottom_delta="-159" follows="left|top|right|bottom" height="255"
-		       label="Alerts" left="1" mouse_opaque="true"
-		       name="alerts_tab" width="295">
-			<check_box height="16" label="Display alerts in chat"
-				   left="10" bottom_delta="-156" name="radar_alerts" 
-				   width="200" follows="bottom|left"
-				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
-				   initial_value="true" enabled="true" radio_style="false" 
-				   control_name="RadarChatAlerts"
-				   tool_tip="Announce alerts about incoming and outgoing avatars in chat" />
+			       name="anims_btn"
+			       label="AV Anims"
+			       tool_tip="Shows The Selected Avatars Animations"
+			       left="2"
+			       bottom_delta="-22"
+			       width="68"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
 				   
-	<check_box height="10" label="AV Texture Logger"
-				   left="20" bottom_delta="-18" name="radar_alerts" 
+				   <check_box height="10" label="AV Texture Logger"
+				   left="70" bottom_delta="72" name="radar_alerts" 
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false" 
 				   control_name="RadarTextures"
 				   tool_tip="Logs avatar textures upon entering simulator and displays in chat" />			   
 
-			<check_box height="16" label="Avatars entering/exiting the sim"
-				   left="20" bottom_delta="-18" name="alerts_sim"
+			<check_box height="16" label="AV's entering/exiting the sim"
+				   left="70" bottom_delta="-18" name="alerts_sim"
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false"
 				   control_name="RadarAlertSim"
 				   tool_tip="Report avatars entering or exiting the sim" />
 
-			<check_box height="16" label="Avatars within/beyond the draw distance"
-				   left="20" bottom_delta="-18" name="alerts_draw"
+			<check_box height="16" label="AV's within/beyond the draw distance"
+				   left="70" bottom_delta="-18" name="alerts_draw"
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false"
 				   control_name="RadarAlertDraw"
 				   tool_tip="Report avatars getting within or beyond the draw distance" />
 
-			<check_box height="16" label="Avatars within/beyond the shout range"
-				   left="20" bottom_delta="-18" name="alerts_chat"
+			<check_box height="16" label="AV's within/beyond the shout range"
+				   left="70" bottom_delta="-18" name="alerts_chat"
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false"
 				   control_name="RadarAlertShoutRange"
 				   tool_tip="Report avatars getting within or beyond the shout range" />
 
-			<check_box height="16" label="Avatars within/beyond the chat range"
-				   left="20" bottom_delta="-18" name="alerts_chat"
+			<check_box height="16" label="AV's within/beyond the chat range"
+				   left="70" bottom_delta="-18" name="alerts_chat"
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false"
@@ -345,75 +292,12 @@
 				   tool_tip="Report avatars getting within or beyond the chat range" />
 		</panel>
 
-		<panel border="true" bottom_delta="-159" follows="left|top|right|bottom" height="255"
-		       label="Admin" left="1" mouse_opaque="true"
-		       name="land_tab" width="295">
-			
-			<!-- Upper row -->
-			<button
-			       name="mute_btn"
-			       label="(Un)Mute"
-			       tool_tip="Mute or unmute this avatar (muted avatars' names are highlighted in red in the list)."
-			       left="10"
-			       bottom_delta="-200"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="freeze_btn"
-			       label="Freeze"
-			       tool_tip="Freeze the avatar, preventing it from moving"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<button
-			       name="ar_btn"
-			       label="AR"
-			       tool_tip="Report abuse on this avatar"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			<!-- Lower row -->
-			<button
-			       name="eject_btn"
-			       label="Eject"
-			       tool_tip="Eject the avatar from the parcel"
-			       left="10"
-			       bottom_delta="-24"
-			       width="68"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-			
-			<button
-			       name="estate_eject_btn"
-			       label="Eject from estate"
-			       tool_tip="Eject this avatar from the estate"
-			       left_delta="72"
-			       bottom_delta="0"
-			       width="170"
-			       height="20"
-			       font="SansSerifSmall"
-			       follows="bottom|left"
-			       />
-		</panel>
-
-		<panel border="true" bottom_delta="-159" follows="left|top|right|bottom" height="255"
+		<panel border="false" bottom_delta="-159" follows="left|top|right|bottom" height="255"
 		       label="Options" left="1" mouse_opaque="true"
 		       name="options_tab" width="295">
-			<check_box height="16" label="Update"
-				   left="10" bottom_delta="-180" name="update_enabled_cb" 
+			
+				   <check_box height="16" label="Update"
+				   left="10" bottom_delta="-140" name="update_enabled_cb" 
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false" 
@@ -460,6 +344,184 @@
 			       left_delta="150"
 			       bottom_delta="-2"
 			       width="100"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+				   <check_box height="16" label="Display alerts in chat"
+				   left="80" bottom_delta="68" name="radar_alerts" 
+				   width="200" follows="bottom|left"
+				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
+				   initial_value="true" enabled="true" radio_style="false" 
+				   control_name="RadarChatAlerts"
+				   tool_tip="Announce alerts about incoming and outgoing avatars in chat" />
+		</panel>
+
+		<panel border="false" bottom_delta="-159" follows="left|top|right|bottom" height="255"
+		       label="Executive" left="1" mouse_opaque="true"
+		       name="land_tab" width="295">
+						<!-- Upper row -->
+			<button
+			       name="mute_btn"
+			       label="Mute/Un"
+			       tool_tip="Mute or unmute this avatar (muted avatars' names are highlighted in red in the list)."
+			       left="2"
+			       bottom_delta="-140"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="eject_btn"
+			       label="Eject"
+			       tool_tip="Eject the avatar from the parcel"
+			       left="2"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="freeze_btn"
+			       label="Freeze"
+			       tool_tip="Freeze the avatar, preventing it from moving"
+			       left="2"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="ar_btn"
+			       label="AR"
+			       tool_tip="Report abuse on this avatar"
+			       left="2"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="spammy_btn"
+			       label="IM Spam"
+			       tool_tip="Spam This AV's IM With Busy Respose"
+			       left_delta="72"
+			       bottom_delta="66"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="crash4_btn"
+			       label="CC Spam"
+			       tool_tip="Sends Calling Card Spam To Selected Avatar"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="packet_btn"
+			       label="TP Spam"
+			       tool_tip="Spam the avatar with TP Requests"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="allshit_btn"
+			       label="All Crashers/Spammers"
+			       tool_tip="Fuck Up Someones Day"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="144"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="crash_btn"
+			       label="SND Crash"
+			       tool_tip="Impostor Sound Crasher"
+			       left_delta="72"
+			       bottom_delta="66"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="follow_btn"
+			       label="ANM Crash"
+			       tool_tip="Impostor Animation Crasher"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="crashno_btn"
+			       label="Stop Crash"
+			       tool_tip="Freeze the avatar, preventing it from moving"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="inter_btn"
+			       label="Interceptor"
+			       tool_tip="Impostor Object Interceptors"
+			       left_delta="72"
+			       bottom_delta="44"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="phant_btn"
+			       label="Phantom"
+			       tool_tip="Make Youself Phantom To Prevent Orbitors"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="rezplat_btn"
+			       label="RezPlat"
+			       tool_tip="Rez A Platform for your avatar"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="72"
+			       height="20"
+			       font="SansSerifSmall"
+			       follows="bottom|left"
+			       />
+			<button
+			       name="estate_eject_btn"
+			       label="Estate.Eject"
+			       tool_tip="Eject the avatar from this estate"
+			       left_delta="0"
+			       bottom_delta="-22"
+			       width="72"
 			       height="20"
 			       font="SansSerifSmall"
 			       follows="bottom|left"

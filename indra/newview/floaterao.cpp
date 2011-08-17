@@ -1096,7 +1096,7 @@ void LLFloaterAO::onNotecardLoadComplete(LLVFS *vfs,const LLUUID& asset_uuid,LLA
 							LLUUID animUUID = LLUUID(stranim);
 							if (animid.isNull() && animUUID.notNull())
 							{
-								animid = animUUID;
+							animid = animUUID;
 							}
 							//
 //							llinfos << invfolderid.asString().c_str() << llendl;

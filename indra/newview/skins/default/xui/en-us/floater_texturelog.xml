@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater
 	name="Neil_texture_Debugger"
-	title="Radar must be open and the checkboxes in alerts(avtexture logger and display in chat)"
+	title="Make sure AV Texture Logger Is Checked close then restart radar"
 	can_resize="false"
 	can_minimize="true"
 	can_close="true"

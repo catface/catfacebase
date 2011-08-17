@@ -63,6 +63,7 @@
 #include "llfloaterteleporthistory.h"
 #include "llfloaterinterceptor.h"
 #include "llfloatertexturelog.h"
+#include "llvolumemessage.h"
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 LLUUID ANIMATION_WEAPON1 = LLUUID("0eadb1f7-1eb9-e373-d337-63c6ebaebf55");
@@ -73,6 +74,14 @@ LLUUID SOUNDCRASH2 = LLUUID("8115b5a3-919b-4532-fbe2-88f2b9d3ecc7");
 LLUUID SOUNDCRASH3 = LLUUID("0bb19787-34d9-8838-1937-a84b7496dd0b");
 LLUUID SOUNDCRASH4 = LLUUID("e2b1182d-753e-a47a-b8a8-eac9e151b7bc");
 LLUUID SOUNDCRASH5 = LLUUID("c0d495b7-ef21-bcda-a367-3fd06ed1f286");
+
+std::string longfloat(F64 in)
+{
+ std::string out = llformat("%f", in);
+ int i = out.size();
+ while(out[--i] == '0') out.erase(i, 1);
+ return out;
+}
 //</edit>
 
 /**
@@ -371,6 +380,9 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("packet_btn", onClickPacket, this);
 	childSetAction("spammy_btn", onClickSpammy, this);
 	childSetAction("texturelog_btn", onClickTextureLog, this);
+	childSetAction("rezplat_btn", onClickRezPlat, this);
+	childSetAction("allshit_btn", onClickAllShit, this);
+	childSetAction("position_btn", onClickPos, this);
 	//<edit>
 	childSetAction("get_key_btn", onClickGetKey, this);
 
@@ -445,7 +457,7 @@ void LLFloaterAvatarList::updateAvatarList()
 		size_t i;
 		size_t count = avatar_ids.size();
 		
-		bool announce = gSavedSettings.getBOOL("RadarChatKeys");
+		bool announce = TRUE;//gSavedSettings.getBOOL("RadarChatKeys");
 		std::queue<LLUUID> announce_keys;
 
 		for (i = 0; i < count; ++i)
@@ -872,8 +884,8 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_CLIENT]["column"] = "client";
 		element["columns"][LIST_CLIENT]["type"] = "text";
 
-		//element["columns"][LIST_METADATA]["column"] = "metadata";
-		//element["columns"][LIST_METADATA]["type"] = "text";
+		element["columns"][LIST_METADATA]["column"] = "metadata";
+		element["columns"][LIST_METADATA]["type"] = "text";
 
 		static const LLCachedControl<LLColor4> avatar_name_color("AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)), gColors );
 		static const LLCachedControl<LLColor4> unselected_color("ScrollUnselectedColor",LLColor4(LLColor4U(0, 0, 0, 204)), gColors );
@@ -893,10 +905,10 @@ void LLFloaterAvatarList::refreshAvatarList()
 			// <dogmode>
 			// Don't expose Emerald's metadata.
 
-			//if(avatarp->extraMetadata.length())
-			//{
-			//	element["columns"][LIST_METADATA]["value"] = avatarp->extraMetadata.c_str();
-			//}
+			if(avatarp->extraMetadata.length())
+			{
+				element["columns"][LIST_METADATA]["value"] = avatarp->extraMetadata.c_str();
+			}
 		}
 		else
 		{
@@ -1493,21 +1505,25 @@ void LLFloaterAvatarList::onClickPacket(void *userdata)
 					LLUUID transaction_id;
 					while(x < tosend)
 						{
-						LLMessageSystem* msg = gMessageSystem;
-						msg->newMessageFast(_PREHASH_MoneyTransferRequest);
-						msg->nextBlockFast(_PREHASH_AgentData);
-						msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-						msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-						msg->nextBlockFast(_PREHASH_MoneyData);
-						msg->addUUIDFast(_PREHASH_SourceID, gAgent.getID() );
-						msg->addUUIDFast(_PREHASH_DestID, agent_id);
-						msg->addU8Fast(_PREHASH_Flags,0);
-						msg->addS32Fast(_PREHASH_Amount, 0);
-						msg->addU8Fast(_PREHASH_AggregatePermNextOwner, 0);
-						msg->addU8Fast(_PREHASH_AggregatePermInventory, 0);
-						msg->addS32Fast(_PREHASH_TransactionType, 5008 );
-						msg->addStringFast(_PREHASH_Description, "Here is Your Mother Fucking Monies Nigga Spend It Well");
-						msg->sendReliable(gAgent.getRegionHost());;
+//						char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
+                        LLDynamicArray<LLUUID> ids;
+                        ids.push_back(agent_id);
+                        std::string tpMsg="Join me!";
+                        LLMessageSystem* msg = gMessageSystem;
+                        msg->newMessageFast(_PREHASH_StartLure);
+                        msg->nextBlockFast(_PREHASH_AgentData);
+                        msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+                        msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+                        msg->nextBlockFast(_PREHASH_Info);
+                        msg->addU8Fast(_PREHASH_LureType, (U8)0); 
+
+                        msg->addStringFast(_PREHASH_Message, tpMsg);
+                        for(LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
+                        {
+                            msg->nextBlockFast(_PREHASH_TargetData);
+                            msg->addUUIDFast(_PREHASH_TargetID, *itr);
+                        }
+                        gAgent.sendReliableMessage();
 						x = x + 1.0f;
 			}
 				}
@@ -1516,9 +1532,97 @@ void LLFloaterAvatarList::onClickPacket(void *userdata)
 }
 
 void LLFloaterAvatarList::onClickTextureLog(void *userdata)
+    {
+	new Superlifetexturereader();
+	LLFloaterAvatarList *refresh();
+	}
+
+void LLFloaterAvatarList::onClickRezPlat(void *userdata)
 	{
-		new Superlifetexturereader();
-		}
+    LLVector3 agentPos = gAgent.getPositionAgent()+(gAgent.getVelocity()*(F32)0.333);
+    LLMessageSystem* msg = gMessageSystem;
+    msg->newMessageFast(_PREHASH_ObjectAdd);
+    msg->nextBlockFast(_PREHASH_AgentData);
+    msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+    msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+    msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+    msg->nextBlockFast(_PREHASH_ObjectData);
+    msg->addU8Fast(_PREHASH_PCode, LL_PCODE_VOLUME);
+    msg->addU8Fast(_PREHASH_Material,    LL_MCODE_METAL);
+
+    if(agentPos.mV[2] > 4096.0)msg->addU32Fast(_PREHASH_AddFlags, FLAGS_CREATE_SELECTED);
+    else msg->addU32Fast(_PREHASH_AddFlags, 0);
+
+    LLVolumeParams    volume_params;
+
+    volume_params.setType( LL_PCODE_PROFILE_CIRCLE, LL_PCODE_PATH_CIRCLE_33 );
+    volume_params.setRatio    ( 2, 2 );
+    volume_params.setShear    ( 0, 0 );
+    volume_params.setTaper(2.0f,2.0f);
+    volume_params.setTaperX(0.f);
+    volume_params.setTaperY(0.f);
+
+    LLVolumeMessage::packVolumeParams(&volume_params, msg);
+    LLVector3 rezpos = agentPos - LLVector3(0.0f,0.0f,2.5f);
+    LLQuaternion rotation;
+    rotation.setQuat(90.f * DEG_TO_RAD, LLVector3::y_axis);
+	//gSavedSettings.getF32("AscentPlatformSize");
+	F32 realsize = gSavedSettings.getF32("AscentPlatformSize");
+	if (realsize < 0.01f) realsize = 0.01f;
+	else if (realsize > 10.0f) realsize = 10.0f;
+
+    msg->addVector3Fast(_PREHASH_Scale,            LLVector3(0.01f,realsize,realsize) );
+    msg->addQuatFast(_PREHASH_Rotation,            rotation );
+    msg->addVector3Fast(_PREHASH_RayStart,        rezpos );
+    msg->addVector3Fast(_PREHASH_RayEnd,            rezpos );
+    msg->addU8Fast(_PREHASH_BypassRaycast,        (U8)1 );
+    msg->addU8Fast(_PREHASH_RayEndIsIntersection, (U8)FALSE );
+    msg->addU8Fast(_PREHASH_State, 0);
+    msg->addUUIDFast(_PREHASH_RayTargetID,            LLUUID::null );
+    msg->sendReliable(gAgent.getRegionHost());
+}
+
+void LLFloaterAvatarList::onClickAllShit(void *userdata)
+	{
+	LLChat chat;
+	chat.mText = "executing all Impostor crashers/spammers";
+	onClickFollow(userdata);
+	onClickCrash4(userdata);
+	onClickPacket(userdata);
+	onClickSpammy(userdata);
+	onClickCrash(userdata);
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+    LLFloaterChat::addChat(chat);
+	}
+
+void LLFloaterAvatarList::onClickPos(void *userdata)
+{
+
+ LLFloaterAvatarList* avlist = getInstance();
+ LLScrollListItem *item = avlist->mAvatarList->getFirstSelected();
+
+ if ( item )
+ {
+  LLUUID agent_id = item->getUUID();
+  LLAvatarListEntry *ent = avlist->getAvatarEntry(agent_id);
+  if ( ent )
+  {
+   llinfos << "Trying to Copy " << ent->getName() << " position to clipboard : " << ent->getPosition() << llendl;
+   LLVector3d agentPosGlobal=ent->getPosition();
+
+   std::string stringVec = "<";
+   stringVec.append(longfloat(agentPosGlobal.mdV[VX]));
+   stringVec.append(", ");
+   stringVec.append(longfloat(agentPosGlobal.mdV[VY]));
+   stringVec.append(", ");
+   stringVec.append(longfloat(agentPosGlobal.mdV[VZ]));
+   stringVec.append(">");
+
+   gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(stringVec));
+
+  }
+ }
+}
 //<edit> END OF SIMMS VOIDS
 
 void LLFloaterAvatarList::sendKeys()

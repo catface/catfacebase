@@ -23,7 +23,7 @@ LLInventoryBackupOrder::LLInventoryBackupOrder()
 	// My personal defaults based on what is assumed to not work
 	mDownloadTextures = true;
 	mDownloadSounds = true;
-	mDownloadCallingCards = false;
+	mDownloadCallingCards = true;
 	mDownloadLandmarks = true;
 	mDownloadScripts = true;
 	mDownloadWearables = true;

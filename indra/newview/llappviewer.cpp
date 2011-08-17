@@ -205,15 +205,8 @@
 	#include "lllcd.h"
 #endif
 
-
 //----------------------------------------------------------------------------
 // viewer.cpp - these are only used in viewer, should be easily moved.
-
-
-
-
-
-
 
 #if LL_DARWIN
 extern void init_apple_menu(const char* product);
@@ -275,7 +268,6 @@ BOOL				gDisconnected = FALSE;
 
 // Minimap scale in pixels per region
 
-
 // used to restore texture state after a mode switch
 LLFrameTimer	gRestoreGLTimer;
 BOOL			gRestoreGL = FALSE;
@@ -305,8 +297,6 @@ BOOL gLogoutInProgress = FALSE;
 
 static std::string gPlaceAvatarCap;	//OGPX TODO: should belong elsewhere, as part of the llagent caps?
 
-
-
 ////////////////////////////////////////////////////////////
 // Internal globals... that should be removed.
 static std::string gArgs;
@@ -322,7 +312,7 @@ static BOOL gDoDisconnect = FALSE;
 static std::string gLaunchFileOnQuit;
 
 // Used on Win32 for other apps to identify our window (eg, win_setup)
-const char* const VIEWER_WINDOW_CLASSNAME = "Second Life"; // Don't change
+const char* const VIEWER_WINDOW_CLASSNAME = "Second Life";
 
 //----------------------------------------------------------------------------
 // File scope definitons
@@ -936,7 +926,6 @@ bool LLAppViewer::mainLoop()
 					pauseMainloopTimeout(); // *TODO: Remove. Messages shouldn't be stalling for 20+ seconds!
 					
 					LLFastTimer t3(LLFastTimer::FTM_IDLE);
-					// <edit> bad_alloc!! </edit>
 					idle();
 
 					if (gAres != NULL && gAres->isInitialized())
@@ -1790,13 +1779,7 @@ bool LLAppViewer::initConfiguration()
 	LLFirstUse::addConfigVariable("FirstSculptedPrim");
 	LLFirstUse::addConfigVariable("FirstVoice");
 	LLFirstUse::addConfigVariable("FirstMedia");
-	
-// [RLVa:KB] - Checked: RLVa-1.0.3a (2009-09-10) | Added: RLVa-1.0.3a
-	//LLFirstUse::addConfigVariable(RLV_SETTING_FIRSTUSE_DETACH);
-	//LLFirstUse::addConfigVariable(RLV_SETTING_FIRSTUSE_ENABLEWEAR);
-	//LLFirstUse::addConfigVariable(RLV_SETTING_FIRSTUSE_FARTOUCH);
-// [/RLVa:KB]
-
+		
 	// - read command line settings.
 	LLControlGroupCLP clp;
 	std::string	cmd_line_config	= gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,
@@ -2224,8 +2207,8 @@ bool LLAppViewer::initWindow()
 
 	// always start windowed
 	BOOL ignorePixelDepth = gSavedSettings.getBOOL("IgnorePixelDepth");
-	//gViewerWindow = new LLViewerWindow(gWindowTitle, "Second Life",
-	gViewerWindow = new LLViewerWindow("Impostor", "Second Life",
+	gViewerWindow = new LLViewerWindow(gWindowTitle, 
+		VIEWER_WINDOW_CLASSNAME,
 		gSavedSettings.getS32("WindowX"), gSavedSettings.getS32("WindowY"),
 		gSavedSettings.getS32("WindowWidth"), gSavedSettings.getS32("WindowHeight"),
 		FALSE, ignorePixelDepth);

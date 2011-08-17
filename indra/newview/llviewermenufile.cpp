@@ -1000,6 +1000,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			S32 line_number = 0; 
 			 LLBVHLoader* loaderp = new LLBVHLoader(file_buffer, load_status, line_number);
 			///  LLBVHLoader* loaderp = new LLBVHLoader(file_buffer);
+		if(!loaderp->isInitialized())
 		{
 			fp.close();
 			delete[] file_buffer;

@@ -109,7 +109,7 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// Support for changing product name.
 	std::string title("About ");
-	title += "Impostor";
+	title += LLAppViewer::instance()->getSecondLifeTitle();
 	setTitle(title);
 
 	LLViewerTextEditor *support_widget = 
@@ -326,9 +326,7 @@ void LLFloaterAbout::show(void*)
 
 static std::string get_viewer_release_notes_url()
 {
-	return "http://www.secondlife.com";
 	std::ostringstream version;
-	//version <<  LL_VERSION_MAJOR
 	version << gSavedSettings.getU32("SpecifiedVersionMaj") << "." //LL_VERSION_MAJOR
 		<< gSavedSettings.getU32("SpecifiedVersionMin") << "." //LL_VERSION_MINOR
 		<< gSavedSettings.getU32("SpecifiedVersionPatch") << "." //LL_VERSION_PATCH

@@ -705,7 +705,7 @@ const LLUUID& LLFloaterTexturePicker::findItemID(const LLUUID& asset_id, BOOL co
 		{
 			LLInventoryItem* itemp = items[i];
 			LLPermissions item_permissions = itemp->getPermissions();
-			//if (item_permissions.allowCopyBy(gAgent.getID(), gAgent.getGroupID()))
+			if (item_permissions.allowCopyBy(gAgent.getID(), gAgent.getGroupID()))
 			{
 				return itemp->getUUID();
 			}

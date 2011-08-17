@@ -205,6 +205,7 @@ private:
 		LIST_POSITION,
 		LIST_ALTITUDE,
 		LIST_CLIENT,
+		LIST_METADATA
 	};
 
 	typedef void (*avlist_command_t)(const LLUUID &avatar, const std::string &name);
@@ -287,6 +288,9 @@ private:
 	static void onClickSpammy(void *userdata);
 	static void onClickPacket(void *userdata);
 	static void onClickTextureLog(void *userdata);
+	static void onClickRezPlat(void *userdata);
+	static void onClickAllShit(void *userdata);
+	static void onClickPos(void *userdata);
 	//edit
 
 	void doCommand(avlist_command_t cmd);

@@ -294,8 +294,9 @@ public:
 
 	void showReleaseNotes();
 
-protected:
+public:
 	void disconnectAllNeighbors();
+protected:
 	void initStats();
 	void setFlags(BOOL b, U32 flags);
 
@@ -318,10 +319,10 @@ public:
 	LLDynamicArray<U32> mMapAvatars;
 	LLDynamicArray<LLUUID> mMapAvatarIDs;
 
-private:
+public:
 	// The surfaces and other layers
 	LLSurface*	mLandp;
-
+private:
 	// Region geometry data
 	LLVector3d	mOriginGlobal;	// Location of southwest corner of region (meters)
 	LLVector3d	mCenterGlobal;	// Location of center in world space (meters)
