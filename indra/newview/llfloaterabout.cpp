@@ -61,11 +61,6 @@
 #include "llwindow.h"
 
 #include "hippogridmanager.h"
-
-// [RLVa:KB]
-#include "rlvhandler.h"
-// [/RLVa:KB]
-
 #if LL_WINDOWS
 #include "lldxhardware.h"
 #endif
@@ -159,15 +154,7 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// Position
 	LLViewerRegion* region = gAgent.getRegion();
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
-	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
-	{
-		support.append(RlvStrings::getString(RLV_STRING_HIDDEN));
-		support.append("\n\n");
-	}
-	else if (region)
-// [/RLVa:KB]
-//	if (region)
+	if (region)
 	{
 		LLStyleSP server_link_style(new LLStyle);
 		server_link_style->setVisible(true);
@@ -326,20 +313,19 @@ void LLFloaterAbout::show(void*)
 
 static std::string get_viewer_release_notes_url()
 {
+	return "http://secondlife.com/";
 	std::ostringstream version;
 	version << gSavedSettings.getU32("SpecifiedVersionMaj") << "." //LL_VERSION_MAJOR
 		<< gSavedSettings.getU32("SpecifiedVersionMin") << "." //LL_VERSION_MINOR
 		<< gSavedSettings.getU32("SpecifiedVersionPatch") << "." //LL_VERSION_PATCH
 		<< gSavedSettings.getU32("SpecifiedVersionBuild"); //LL_VERSION_BUILD
 	LLSD query;
-
-	//query["channel"] = LL_CHANNEL;
 	query["channel"] = gSavedSettings.getString("SpecifiedChannel");
 	query["version"] = version.str();
 
 	std::ostringstream url;
 	url << RELEASE_NOTES_BASE_URL << LLURI::mapToQueryString(query);
 
-	return "http://ascent.balseraph.org/index.php/Ascent_" + version.str();// url.str();*/
+	return "https://jira.secondlife.com/secure/Dashboard.jspa" + version.str();// url.str();*/
 }
 
