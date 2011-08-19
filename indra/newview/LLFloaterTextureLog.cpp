@@ -8,7 +8,6 @@
 #include "llagent.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
-//read file test
 #include <vector>
 #include <iostream>
 #include <fstream>
