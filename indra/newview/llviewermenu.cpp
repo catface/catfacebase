@@ -482,7 +482,7 @@ void handle_pose_stand_stop(void*)
 {
 	if (current_pose != LLUUID::null)
 	{
-		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") - 7.5);
+		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") - 0.1);
 		gAgent.sendAgentSetAppearance();
 		gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
 		current_pose = LLUUID::null;
