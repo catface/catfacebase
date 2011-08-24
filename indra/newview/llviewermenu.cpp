@@ -439,7 +439,7 @@ LLUUID current_pose = LLUUID::null;
 void set_current_pose(std::string anim)
 {
 	if (current_pose == LLUUID::null)
-		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") + 1.5);
+		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") + 0.1);
 
 	gAgent.sendAgentSetAppearance();
 	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
